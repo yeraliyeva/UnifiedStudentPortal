@@ -1,3 +1,5 @@
-
-venv
-.venv
+out/
+*.class
+.DS_Store
+data/
+.idea/

@@ -1,30 +1,32 @@
-import common.DataSeeder;
-import common.Login;
-import users.User;
+import bootstrap.AppContext;
+import bootstrap.DataSeeder;
+import bootstrap.IdSequenceWarmup;
+import domain.user.User;
+import presentation.cli.menu.Menu;
 
-/**
- * Application entry point.
- *
- * Flow:
- * 1. Seed demo data
- * 2. Show login prompt
- * 3. Route authenticated user to their role-specific menu
- * 4. On log out, return to login
- */
-public class Main {
+import java.nio.file.Path;
+import java.util.Optional;
 
+public final class Main {
     public static void main(String[] args) {
-        DataSeeder.seed();
+        Path dataDir = Path.of(System.getProperty("uni.data", "data"));
+        AppContext ctx = AppContext.withJsonStorage(dataDir);
+        new DataSeeder(ctx).seedIfEmpty();
+        IdSequenceWarmup.warm(ctx);
 
+        ctx.console.println("\n=== UNIVERSITY MANAGEMENT SYSTEM ===");
         while (true) {
-            User user = Login.authenticate();
-            if (user == null) {
-                System.out.println("Exiting system.");
-                break;
+            Optional<User> user = ctx.loginScreen.run();
+            if (user.isEmpty()) {
+                String again = ctx.console.readLine("Try again? (y/n):");
+                if (!again.equalsIgnoreCase("y")) break;
+                continue;
             }
-            user.showMenu();
-            // After showMenu returns (user logged out), loop back to login
-            System.out.println("\nLogged out. Returning to login...\n");
+            ctx.console.println("\nWelcome, " + user.get().name().full() + " [" + user.get().getClass().getSimpleName() + "]");
+            Menu menu = ctx.menuFactory.menuFor(user.get());
+            menu.run();
+            ctx.console.println("Logged out.\n");
         }
+        ctx.console.println("Goodbye.");
     }
 }

@@ -1,810 +1,441 @@
-classDiagram
-    direction TB
+flowchart TD
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 0 · CAPABILITY INTERFACES  (top)
-    %% ╚══════════════════════════════════════════════════════╝
+    %% ── colour palette by layer ──────────────────────────────
+    classDef cli    fill:#0d1b2a,stroke:#4cc9f0,color:#e0f7fa
+    classDef boot   fill:#1a1a2e,stroke:#a78bfa,color:#ede9fe
+    classDef app    fill:#12213d,stroke:#7b2d8b,color:#f3e8ff
+    classDef domain fill:#0f3460,stroke:#e94560,color:#ffe4e6
+    classDef iface  fill:#0f2027,stroke:#4cc9f0,color:#4cc9f0,stroke-dasharray:4 4
+    classDef svc    fill:#1b3a4b,stroke:#06d6a0,color:#d0fef5
+    classDef rules  fill:#2d1b69,stroke:#f77f00,color:#fff3cd
+    classDef shared fill:#1a2c1e,stroke:#80ed99,color:#d8f3dc
+    classDef enums  fill:#2c1810,stroke:#fb8500,color:#fff
+    classDef repo   fill:#1a0533,stroke:#c77dff,color:#e9d5ff
+    classDef infra  fill:#1c2833,stroke:#f4a261,color:#fdebd0
+    classDef data   fill:#1b2a1b,stroke:#25a18e,color:#ccfbf1
 
-    namespace CapabilityInterfaces {
-        class ResearcherCapable {
-            <<interface>>
-            +isResearcher() boolean
-            +activateResearcher(field String)
-            +researcherProfile() ResearcherProfile
-        }
-        class BookBorrowerCapable {
-            <<interface>>
-        }
-    }
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER 1 · PRESENTATION / CLI
+    %% ════════════════════════════════════════════════════════
+    subgraph PRES["🖥️  PRESENTATION — CLI  (src/presentation)"]
+        direction TB
+        subgraph CLI_AUTH["auth"]
+            LoginScreen["LoginScreen"]:::cli
+        end
+        subgraph CLI_CON["console"]
+            Console["«interface» Console"]:::iface
+            StdConsole["StdConsole"]:::cli
+        end
+        subgraph CLI_MENU["menus"]
+            MenuIf["«interface» Menu"]:::iface
+            MenuFactoryIf["«interface» MenuFactory"]:::iface
+            MenuItem["MenuItem"]:::cli
+            AdminMenu["AdminMenu"]:::cli
+            StudentMenu["StudentMenu"]:::cli
+            GradStudentMenu["GraduateStudentMenu"]:::cli
+            TeacherMenu["TeacherMenu"]:::cli
+            DeanMenu["DeanMenu"]:::cli
+            ManagerMenu["ManagerMenu"]:::cli
+            LibrarianMenu["LibrarianMenu"]:::cli
+            TechSupportMenu["TechSupportMenu"]:::cli
+            EmpResMenu["EmployeeResearcherMenu"]:::cli
+            BecomeResAction["BecomeResearcherAction"]:::cli
+            ResMenuExt["ResearcherMenuExtension"]:::cli
+        end
+    end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 1 · USER DOMAIN
-    %% ╚══════════════════════════════════════════════════════╝
+    %% ════════════════════════════════════════════════════════
+    %%   BOOTSTRAP
+    %% ════════════════════════════════════════════════════════
+    subgraph BOOT["🔧  BOOTSTRAP  (src/bootstrap)"]
+        direction LR
+        AppContext["AppContext"]:::boot
+        DataSeeder["DataSeeder"]:::boot
+        DefaultMenuFactory["DefaultMenuFactory"]:::boot
+        IdSequenceWarmup["IdSequenceWarmup"]:::boot
+    end
 
-    namespace UserCore {
-        class User {
-            <<abstract>>
-            -username Username
-            -passwordHash String
-            -name PersonName
-            -gender Gender
-            -dateOfBirth LocalDate
-            -email Email
-            -faculty Faculty
-            -language Language
-            +username() Username
-            +name() PersonName
-            +faculty() Faculty
-            +language() Language
-            +changeEmail(Email)
-            +changeLanguage(Language)
-            +matchesPassword(String) boolean
-            +equals(Object) boolean
-            +hashCode() int
-        }
-        class Employee {
-            <<abstract>>
-            -salary Money
-            -hireDate LocalDate
-            -insuranceNumber String
-            +salary() Money
-            +hireDate() LocalDate
-            +insuranceNumber() String
-        }
-    }
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER 2 · APPLICATION — USE CASES
+    %% ════════════════════════════════════════════════════════
+    subgraph APP["⚙️  APPLICATION — Use Cases  (src/application)"]
+        direction TB
+        ResultT["Result&lt;T&gt;"]:::app
 
-    namespace StudentScope {
-        class Student {
-            -degreeType DegreeType
-            -studyYear int
-            -availableCredits Credits
-            -failCount int
-            -enrolled Set~CourseId~
-            -completed Set~CourseId~
-            -researcherProfile ResearcherProfile
-            +MAX_FAILS$ int
-            +availableCredits() Credits
-            +failCount() int
-            +hasReachedFailLimit() boolean
-            +enrolledCourses() Set~CourseId~
-            +completedCourses() Set~CourseId~
-            +recordEnrollment(CourseId, Credits)
-            +recordDrop(CourseId, Credits)
-            +recordCompletion(CourseId)
-            +recordFail()
-            +rehydrate(int, int, Iterable~CourseId~, Iterable~CourseId~)
-            +isResearcher() boolean
-            +activateResearcher(String)
-            +researcherProfile() ResearcherProfile
-        }
-        class GraduateStudent {
-            -supervisorUsername Username
-            +supervisor() Optional~Username~
-            +setSupervisor(Username)
-        }
-        class ResearcherProfile {
-            -owner Username
-            -field String
-            -subscribedJournals Set~String~
-            +owner() Username
-            +field() String
-            +subscribe(String)
-            +unsubscribe(String)
-            +isSubscribedTo(String) boolean
-            +subscribedJournals() Set~String~
-        }
-    }
+        subgraph UC_ADM["admin"]
+            direction LR
+            CreateStudent["CreateStudent"]:::app
+            CreateTeacher["CreateTeacher"]:::app
+            CreateGradStudent["CreateGradStudent"]:::app
+            CreateDean["CreateDean"]:::app
+            CreateManager["CreateManager"]:::app
+            CreateLibrarian["CreateLibrarian"]:::app
+            CreateTechSupport["CreateTechSupport"]:::app
+            CreateEmpRes["CreateEmpResearcher"]:::app
+            DeleteUser["DeleteUser"]:::app
+            GenAcademicReport["GenerateAcademicReport"]:::app
+            GenTopResNews["GenerateTopResearcherNews"]:::app
+        end
+        subgraph UC_CRS["course"]
+            direction LR
+            EnrollInCourse["EnrollInCourse"]:::app
+            DropCourse["DropCourse"]:::app
+            RecordMarks["RecordMarks"]:::app
+            AssignTeacher["AssignTeacher"]:::app
+            CreateCourse["CreateCourse"]:::app
+            SetCapacity["SetCourseCapacity"]:::app
+            SetPrereq["SetCoursePrerequisite"]:::app
+            AddLesson["AddLesson"]:::app
+            ViewTranscript["ViewTranscript"]:::app
+        end
+        subgraph UC_LIB["library"]
+            direction LR
+            BorrowBook["BorrowBook"]:::app
+            ReturnBook["ReturnBook"]:::app
+            AddBook["AddBook"]:::app
+            RemoveBook["RemoveBook"]:::app
+        end
+        subgraph UC_MSG["messaging"]
+            direction LR
+            SendMessage["SendMessage"]:::app
+            PublishNews["PublishNews"]:::app
+            CommentOnNews["CommentOnNews"]:::app
+            SubmitRequest["SubmitRequest"]:::app
+            ProcessRequest["ProcessRequest"]:::app
+            CreateITOrder["CreateITOrder"]:::app
+            AcceptOrder["AcceptOrder"]:::app
+            CompleteOrder["CompleteOrder"]:::app
+        end
+        subgraph UC_ORG["organization"]
+            direction LR
+            CreateOrg["CreateOrganization"]:::app
+            JoinOrg["JoinOrganization"]:::app
+        end
+        subgraph UC_RES["research"]
+            direction LR
+            CreateResProj["CreateResearchProject"]:::app
+            JoinResProj["JoinResearchProject"]:::app
+            PublishPaper["PublishPaper"]:::app
+            SubJournal["SubscribeToJournal"]:::app
+            UnsubJournal["UnsubscribeFromJournal"]:::app
+            GenCitation["GenerateCitation"]:::app
+            SetSupervisor["SetSupervisor"]:::app
+        end
+        subgraph UC_USR["user"]
+            direction LR
+            BecomeResearcher["BecomeResearcher"]:::app
+            RateTeacher["RateTeacher"]:::app
+            Complain["ComplainAboutStudent"]:::app
+        end
+    end
 
-    namespace TeacherScope {
-        class Teacher {
-            -degree String
-            -position TeacherPosition
-            -taughtCourses Set~CourseId~
-            -ratings List~Integer~
-            -researcherProfile ResearcherProfile
-            +degree() String
-            +position() TeacherPosition
-            +setPosition(TeacherPosition)
-            +taughtCourses() Set~CourseId~
-            +recordCourseAssignment(CourseId)
-            +addRating(int)
-            +ratings() List~Integer~
-            +averageRating() double
-            +rehydrate(Iterable~CourseId~, Iterable~Integer~)
-            +isResearcher() boolean
-            +activateResearcher(String)
-            +researcherProfile() ResearcherProfile
-        }
-        class Dean
-    }
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER 3 · DOMAIN MODEL
+    %% ════════════════════════════════════════════════════════
+    subgraph DOMAIN["🏛️  DOMAIN  (src/domain)"]
+        direction TB
 
-    namespace StaffScope {
-        class Admin
-        class Manager {
-            -position ManagerPosition
-            +position() ManagerPosition
-        }
-        class Librarian
-        class TechSupport
-        class EmployeeResearcher {
-            -defaultField String
-            -researcherProfile ResearcherProfile
-            +defaultField() String
-            +isResearcher() boolean
-            +activateResearcher(String)
-            +researcherProfile() ResearcherProfile
-        }
-    }
+        subgraph DOM_CAP["Capability Interfaces"]
+            direction LR
+            ResearcherCapable["«interface» ResearcherCapable"]:::iface
+            BookBorrowerCapable["«interface» BookBorrowerCapable"]:::iface
+        end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 2 · DOMAIN AGGREGATES
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph DOM_USR["Users  (domain/user)"]
+            direction LR
+            User["«abstract» User"]:::domain
+            Employee["«abstract» Employee"]:::domain
+            Admin["Admin"]:::domain
+            Student["Student"]:::domain
+            GraduateStudent["GraduateStudent"]:::domain
+            Teacher["Teacher"]:::domain
+            Dean["Dean"]:::domain
+            Manager["Manager"]:::domain
+            Librarian["Librarian"]:::domain
+            TechSupport["TechSupport"]:::domain
+            EmpResearcher["EmployeeResearcher"]:::domain
+            ResearcherProfile["ResearcherProfile"]:::domain
+        end
 
-    namespace CourseScope {
-        class Course {
-            -id CourseId
-            -name String
-            -credits Credits
-            -type DisciplineType
-            -capacity Capacity
-            -teacherUsernames Set~Username~
-            -studentUsernames Set~Username~
-            -lessons List~Lesson~
-            -prerequisites Set~CourseId~
-            -grades Map~Username, Grade~
-            +id() CourseId
-            +credits() Credits
-            +capacity() Capacity
-            +enroll(Username)
-            +unenroll(Username)
-            +isFull() boolean
-            +remainingSeats() int
-            +assignTeacher(Username)
-            +addLesson(Lesson)
-            +addPrerequisite(CourseId)
-            +recordGrade(Username, Grade)
-            +gradeOf(Username) Optional~Grade~
-            +allGrades() Map~Username, Grade~
-            +equals(Object) boolean
-            +hashCode() int
-        }
-        class CourseId {
-            <<record>>
-            +value String
-            +of(int)$ CourseId
-        }
-        class Capacity {
-            <<record>>
-            +max int
-            +UNLIMITED$ Capacity
-            +canFit(int) boolean
-            +remaining(int) int
-        }
-        class Lesson {
-            <<record>>
-            +type LessonType
-            +slot TimeSlot
-            +room Room
-            +isExam() boolean
-        }
-        class TimeSlot {
-            <<record>>
-            +day WeekDay
-            +time String
-            +overlaps(TimeSlot) boolean
-        }
-        class Room {
-            <<record>>
-            +name String
-            +sameAs(Room) boolean
-        }
-        class Grade {
-            <<record>>
-            +firstHalf int
-            +secondHalf int
-            +exam int
-            +PASSING_TOTAL$ int
-            +total() int
-            +isPassing() boolean
-            +letter() String
-        }
-    }
+        subgraph DOM_CRS["Course Aggregate  (domain/course)"]
+            direction LR
+            Course["Course"]:::domain
+            CourseId["«record» CourseId"]:::domain
+            Capacity["«record» Capacity"]:::domain
+            Lesson["«record» Lesson"]:::domain
+            TimeSlot["«record» TimeSlot"]:::domain
+            Room["«record» Room"]:::domain
+            Grade["«record» Grade"]:::domain
+        end
 
-    namespace ResearchScope {
-        class ResearchPaper {
-            -id PaperId
-            -title String
-            -author Username
-            -journal JournalName
-            -abstractText String
-            -pages int
-            -doi String
-            -publishedDate LocalDate
-            -citations int
-            +id() PaperId
-            +author() Username
-            +journal() JournalName
-            +pages() int
-            +doi() String
-            +citations() int
-            +cite()
-            +length() int
-        }
-        class ResearchProject {
-            -id int
-            -journal JournalName
-            -topic String
-            -supervisor Username
-            -participants Set~Username~
-            -publishedPapers List~PaperId~
-            +journal() JournalName
-            +supervisor() Username
-            +participants() Set~Username~
-            +publishedPapers() List~PaperId~
-            +addParticipant(Username)
-            +recordPublication(PaperId)
-        }
-        class PaperId {
-            <<record>>
-            +value int
-        }
-        class JournalName {
-            <<record>>
-            +value String
-            +matches(String) boolean
-        }
-        class HIndex {
-            <<record>>
-            +value int
-            +MIN_FOR_SUPERVISION$ HIndex
-            +atLeast(HIndex) boolean
-        }
-    }
+        subgraph DOM_RES["Research Aggregate  (domain/research)"]
+            direction LR
+            ResearchPaper["ResearchPaper"]:::domain
+            ResearchProject["ResearchProject"]:::domain
+            PaperId["«record» PaperId"]:::domain
+            JournalName["«record» JournalName"]:::domain
+            HIndex["«record» HIndex"]:::domain
+        end
 
-    namespace LibraryScope {
-        class Book {
-            -id BookId
-            -title String
-            -author String
-            -borrowedBy Username
-            +id() BookId
-            +isBorrowed() boolean
-            +borrower() Optional~Username~
-            +lendTo(Username)
-            +returnFrom(Username)
-        }
-        class BookId {
-            <<record>>
-            +value int
-        }
-    }
+        subgraph DOM_LIB["Library  (domain/library)"]
+            direction LR
+            Book["Book"]:::domain
+            BookId["«record» BookId"]:::domain
+        end
 
-    namespace MessagingScope {
-        class Message {
-            -id int
-            -sender Username
-            -recipient Username
-            -subject String
-            -body String
-            -urgency UrgencyLevel
-            -sentAt LocalDateTime
-            -status MessageStatus
-            +sender() Username
-            +recipient() Username
-            +urgency() UrgencyLevel
-            +status() MessageStatus
-            +markRead()
-            +compareTo(Message) int
-        }
-        class News {
-            -id int
-            -title String
-            -body String
-            -author Username
-            -publishedAt LocalDateTime
-            -comments List~String~
-            -pinned boolean
-            +isPinned() boolean
-            +edit(String, String)
-            +addComment(String)
-            +compareTo(News) int
-        }
-        class Request {
-            -id int
-            -requester Username
-            -type HelpType
-            -faculty Faculty
-            -urgency UrgencyLevel
-            -status RequestStatus
-            +requester() Username
-            +type() HelpType
-            +status() RequestStatus
-            +changeStatus(RequestStatus)
-        }
-        class Order {
-            -id int
-            -requester Username
-            -description String
-            -createdAt LocalDate
-            -status OrderStatus
-            -executor Username
-            +requester() Username
-            +status() OrderStatus
-            +executor() Optional~Username~
-            +accept(Username)
-            +reject()
-            +complete()
-        }
-        class Notification {
-            <<record>>
-            +recipient Username
-            +text String
-            +at LocalDateTime
-            +of(Username, String)$ Notification
-        }
-    }
+        subgraph DOM_MSG["Messaging  (domain/messaging)"]
+            direction LR
+            Message["Message"]:::domain
+            News["News"]:::domain
+            Request["Request"]:::domain
+            Order["Order"]:::domain
+            Notification["«record» Notification"]:::domain
+        end
 
-    namespace OrganizationScope {
-        class Organization {
-            -name String
-            -head Username
-            -members Set~Username~
-            +name() String
-            +head() Username
-            +members() Set~Username~
-            +isMember(Username) boolean
-            +addMember(Username)
-        }
-    }
+        subgraph DOM_ORG["Organization  (domain/organization)"]
+            Organization["Organization"]:::domain
+        end
 
-    namespace LoggingScope {
-        class LogEntry {
-            <<record>>
-            +at LocalDateTime
-            +actor Username
-            +action String
-            +now(Username, String)$ LogEntry
-        }
-    }
+        subgraph DOM_LOG["Logging  (domain/logging)"]
+            LogEntry["«record» LogEntry"]:::domain
+        end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 3 · ENROLLMENT RULES  (Chain of Responsibility)
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph DOM_RULES["Enrollment Rules  (domain/rules)"]
+            direction LR
+            EnrollmentRule["«interface» EnrollmentRule"]:::iface
+            EnrollmentDecision["«record» EnrollmentDecision"]:::rules
+            MaxFailLimitRule["MaxFailLimitRule"]:::rules
+            AlreadyEnrolledRule["AlreadyEnrolledRule"]:::rules
+            CreditLimitRule["CreditLimitRule"]:::rules
+            CapacityRule["CapacityRule"]:::rules
+            PrerequisiteRule["PrerequisiteRule"]:::rules
+            ScheduleConflictRule["ScheduleConflictRule"]:::rules
+        end
 
-    namespace EnrollmentRules {
-        class EnrollmentRule {
-            <<interface>>
-            +check(Student, Course) EnrollmentDecision
-        }
-        class EnrollmentDecision {
-            <<record>>
-            +allowed boolean
-            +reason String
-            +allow()$ EnrollmentDecision
-            +deny(String)$ EnrollmentDecision
-        }
-        class MaxFailLimitRule {
-            +check(Student, Course) EnrollmentDecision
-        }
-        class AlreadyEnrolledRule {
-            +check(Student, Course) EnrollmentDecision
-        }
-        class CreditLimitRule {
-            +check(Student, Course) EnrollmentDecision
-        }
-        class CapacityRule {
-            +check(Student, Course) EnrollmentDecision
-        }
-        class PrerequisiteRule {
-            -courses CourseRepository
-            +check(Student, Course) EnrollmentDecision
-        }
-        class ScheduleConflictRule {
-            -courses CourseRepository
-            +check(Student, Course) EnrollmentDecision
-        }
-    }
+        subgraph DOM_SVC["Domain Services  (domain/service)"]
+            direction LR
+            EnrollmentService["EnrollmentService"]:::svc
+            RoomScheduler["RoomScheduler"]:::svc
+            GpaCalculator["GpaCalculator"]:::svc
+            HIndexCalculator["HIndexCalculator"]:::svc
+            CitationFormatter["CitationFormatter"]:::svc
+            PaperPublisher["PaperPublisher"]:::svc
+            SubscriptionService["SubscriptionService"]:::svc
+        end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 4 · DOMAIN SERVICES  (middle)
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph DOM_SHARED["Shared Value Objects  (domain/shared)"]
+            direction LR
+            Username["Username"]:::shared
+            PersonName["«record» PersonName"]:::shared
+            Email["«record» Email"]:::shared
+            Money["«record» Money"]:::shared
+            Credits["«record» Credits"]:::shared
+            IdSequence["IdSequence"]:::shared
+        end
 
-    namespace DomainServices {
-        class EnrollmentService {
-            -rules List~EnrollmentRule~
-            +tryEnroll(Student, Course) EnrollmentDecision
-        }
-        class RoomScheduler {
-            -courses CourseRepository
-            +isAvailable(Room, TimeSlot) boolean
-        }
-        class GpaCalculator {
-            -courses CourseRepository
-            +of(Student) double
-        }
-        class HIndexCalculator {
-            +calculate(List~ResearchPaper~) HIndex
-        }
-        class CitationFormatter {
-            +format(ResearchPaper, PaperFormat) String
-        }
-        class PaperPublisher {
-            -papers ResearchPaperRepository
-            -projects ResearchProjectRepository
-            -notifications NotificationRepository
-            -news NewsRepository
-            -users UserRepository
-            +publish(ResearchPaper)
-        }
-        class SubscriptionService {
-            -projects ResearchProjectRepository
-            +subscribe(ResearcherCapable, String) boolean
-            +unsubscribe(ResearcherCapable, String)
-        }
-    }
+        subgraph DOM_ENUM["Enumerations  (domain/enums)"]
+            direction LR
+            DegreeType["DegreeType"]:::enums
+            Faculty["Faculty"]:::enums
+            Gender["Gender"]:::enums
+            Language["Language"]:::enums
+            TeacherPosition["TeacherPosition"]:::enums
+            ManagerPosition["ManagerPosition"]:::enums
+            DisciplineType["DisciplineType"]:::enums
+            LessonType["LessonType"]:::enums
+            WeekDay["WeekDay"]:::enums
+            MessageStatus["MessageStatus"]:::enums
+            UrgencyLevel["UrgencyLevel"]:::enums
+            OrderStatus["OrderStatus"]:::enums
+            RequestStatus["RequestStatus"]:::enums
+            HelpType["HelpType"]:::enums
+            PaperFormat["PaperFormat"]:::enums
+        end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 5 · SHARED VALUE OBJECTS
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph DOM_REPO["Repository Ports / Interfaces  (domain/repository)"]
+            direction LR
+            UserRepo["«interface» UserRepository"]:::repo
+            CourseRepo["«interface» CourseRepository"]:::repo
+            BookRepo["«interface» BookRepository"]:::repo
+            MessageRepo["«interface» MessageRepository"]:::repo
+            NewsRepo["«interface» NewsRepository"]:::repo
+            RequestRepo["«interface» RequestRepository"]:::repo
+            OrderRepo["«interface» OrderRepository"]:::repo
+            PaperRepo["«interface» ResearchPaperRepository"]:::repo
+            ProjectRepo["«interface» ResearchProjectRepository"]:::repo
+            OrgRepo["«interface» OrganizationRepository"]:::repo
+            NotifRepo["«interface» NotificationRepository"]:::repo
+            LogRepo["«interface» LogRepository"]:::repo
+        end
+    end
 
-    namespace SharedValueObjects {
-        class Username {
-            -value String
-            +value() String
-            +equals(Object) boolean
-            +hashCode() int
-        }
-        class PersonName {
-            <<record>>
-            +first String
-            +last String
-            +full() String
-        }
-        class Email {
-            <<record>>
-            +address String
-        }
-        class Money {
-            <<record>>
-            +amount double
-        }
-        class Credits {
-            <<record>>
-            +value int
-            +SEMESTER_LIMIT$ Credits
-            +covers(Credits) boolean
-            +minus(Credits) Credits
-            +plus(Credits) Credits
-        }
-        class IdSequence {
-            -counter AtomicInteger
-            +next() int
-            +peek() int
-            +seedAtLeast(int)
-        }
-    }
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER 4 · INFRASTRUCTURE
+    %% ════════════════════════════════════════════════════════
+    subgraph INFRA["🔌  INFRASTRUCTURE  (src/infrastructure)"]
+        direction TB
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 6 · ENUMERATIONS
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph INF_AUTH["auth"]
+            direction LR
+            PlainPasswordHasher["PlainPasswordHasher"]:::infra
+        end
 
-    namespace Enumerations {
-        class DegreeType {
-            <<enumeration>>
-            BACHELOR
-            MASTER
-            DOCTORATE
-        }
-        class Faculty {
-            <<enumeration>>
-            SITE
-            SEOGI
-            SG
-            KMA
-            ISE
-            BS
-        }
-        class Gender {
-            <<enumeration>>
-            MALE
-            FEMALE
-        }
-        class Language {
-            <<enumeration>>
-            ENGLISH
-            KAZAKH
-            RUSSIAN
-        }
-        class TeacherPosition {
-            <<enumeration>>
-            LECTOR
-            SENIOR_LECTOR
-            PROFESSOR
-        }
-        class ManagerPosition {
-            <<enumeration>>
-            OR
-            DEPARTMENT
-            DEANS_OFFICE
-        }
-        class DisciplineType {
-            <<enumeration>>
-            MAJOR
-            MINOR
-            FREE
-        }
-        class LessonType {
-            <<enumeration>>
-            LECTURE
-            PRACTICE
-            OFFICE_HOURS
-            EXAM
-        }
-        class WeekDay {
-            <<enumeration>>
-            MONDAY
-            TUESDAY
-            WEDNESDAY
-            THURSDAY
-            FRIDAY
-            SATURDAY
-            SUNDAY
-        }
-        class MessageStatus {
-            <<enumeration>>
-            UNREAD
-            READ
-        }
-        class UrgencyLevel {
-            <<enumeration>>
-            LOW
-            MEDIUM
-            HIGH
-        }
-        class OrderStatus {
-            <<enumeration>>
-            NEW
-            ACCEPTED
-            REJECTED
-            DONE
-        }
-        class RequestStatus {
-            <<enumeration>>
-            PENDING
-            ACCEPTED
-            NOT_APPROVED
-            APPROVED
-            REJECTED
-        }
-        class HelpType {
-            <<enumeration>>
-            TRANSCRIPT_FOR_SEMESTER
-            TRANSCRIPT_FOR_YEAR
-            CERTIFICATE_OF_EDUCATION
-            ACADEMIC_MOBILITY
-            COORDINATION_OF_DIPLOMA_TOPIC
-            REQUEST_FOR_CREATING_ORGANIZATION
-        }
-        class PaperFormat {
-            <<enumeration>>
-            PLAIN_TEXT
-            BIBTEX
-        }
-    }
+        subgraph INF_I18N["i18n"]
+            direction LR
+            Translator["«interface» Translator"]:::iface
+            PropertiesTranslator["PropertiesTranslator"]:::infra
+        end
 
-    %% ╔══════════════════════════════════════════════════════╗
-    %%   LAYER 7 · REPOSITORY PORTS  (bottom)
-    %% ╚══════════════════════════════════════════════════════╝
+        subgraph INF_LOG["logging"]
+            direction LR
+            Logger["«interface» Logger"]:::iface
+            RepositoryLogger["RepositoryLogger"]:::infra
+        end
 
-    namespace RepositoryPorts {
-        class UserRepository {
-            <<interface>>
-            +save(User)
-            +findByUsername(Username) Optional~User~
-            +exists(Username) boolean
-            +delete(Username)
-            +findAll() Collection~User~
-        }
-        class CourseRepository {
-            <<interface>>
-            +save(Course)
-            +findById(CourseId) Optional~Course~
-            +findAll() Collection~Course~
-        }
-        class BookRepository {
-            <<interface>>
-            +save(Book)
-            +findById(BookId) Optional~Book~
-            +findFirstAvailableByTitle(String) Optional~Book~
-            +findAll() Collection~Book~
-            +delete(BookId)
-        }
-        class MessageRepository {
-            <<interface>>
-            +save(Message)
-            +inboxOf(Username) List~Message~
-        }
-        class NewsRepository {
-            <<interface>>
-            +save(News)
-            +findById(int) Optional~News~
-            +findAllSorted() List~News~
-            +delete(int)
-        }
-        class RequestRepository {
-            <<interface>>
-            +save(Request)
-            +findById(int) Optional~Request~
-            +findAll() List~Request~
-            +findByRequester(Username) List~Request~
-        }
-        class OrderRepository {
-            <<interface>>
-            +save(Order)
-            +findById(int) Optional~Order~
-            +findAll() List~Order~
-        }
-        class ResearchPaperRepository {
-            <<interface>>
-            +save(ResearchPaper)
-            +findById(PaperId) Optional~ResearchPaper~
-            +findByAuthor(Username) List~ResearchPaper~
-            +findAll() Collection~ResearchPaper~
-        }
-        class ResearchProjectRepository {
-            <<interface>>
-            +save(ResearchProject)
-            +findByJournal(JournalName) Optional~ResearchProject~
-            +findAll() Collection~ResearchProject~
-        }
-        class OrganizationRepository {
-            <<interface>>
-            +save(Organization)
-            +findByName(String) Optional~Organization~
-            +findAll() Collection~Organization~
-        }
-        class NotificationRepository {
-            <<interface>>
-            +save(Notification)
-            +findFor(Username) List~Notification~
-            +clearFor(Username)
-        }
-        class LogRepository {
-            <<interface>>
-            +append(LogEntry)
-            +findAll() List~LogEntry~
-            +findByActor(Username) List~LogEntry~
-        }
-    }
+        subgraph INF_JSON["persistence / json  — hand-rolled parser"]
+            direction LR
+            JsonValue["«sealed» JsonValue"]:::infra
+            JsonString["JsonString"]:::infra
+            JsonNumber["JsonNumber"]:::infra
+            JsonBool["JsonBool"]:::infra
+            JsonNull["JsonNull"]:::infra
+            JsonArray["JsonArray"]:::infra
+            JsonObject["JsonObject"]:::infra
+            JsonReader["JsonReader"]:::infra
+            JsonWriter["JsonWriter"]:::infra
+            JsonObjectBuilder["JsonObjectBuilder"]:::infra
+        end
 
-    %% ═══════════════════════════════════════════════════════
-    %%  RELATIONSHIPS
-    %% ═══════════════════════════════════════════════════════
+        subgraph INF_DB["persistence / database"]
+            direction LR
+            DatabaseIf["«interface» Database"]:::iface
+            JsonFileDatabase["JsonFileDatabase"]:::infra
+        end
 
-    %% ── Inheritance ─────────────────────────────────────────
-    User <|-- Admin
-    User <|-- Student
-    User <|-- Employee
-    Student <|-- GraduateStudent
-    Employee <|-- Teacher
-    Employee <|-- Manager
-    Employee <|-- Librarian
-    Employee <|-- TechSupport
-    Employee <|-- EmployeeResearcher
-    Teacher <|-- Dean
+        subgraph INF_ORM["persistence / orm  — generic ORM"]
+            direction LR
+            OrmRepo["Repository&lt;T,ID&gt;"]:::infra
+            QueryBuilder["QueryBuilder&lt;T,ID&gt;"]:::infra
+            EntityMapper["«interface» EntityMapper&lt;T,ID&gt;"]:::iface
+            Condition["Condition"]:::infra
+            Op["«enum» Op"]:::infra
+            MapperHelpers["MapperHelpers"]:::infra
+        end
 
-    %% ── Interface realisations ──────────────────────────────
-    Student ..|> ResearcherCapable
-    Student ..|> BookBorrowerCapable
-    GraduateStudent ..|> ResearcherCapable
-    Teacher ..|> ResearcherCapable
-    Teacher ..|> BookBorrowerCapable
-    EmployeeResearcher ..|> ResearcherCapable
-    MaxFailLimitRule ..|> EnrollmentRule
-    AlreadyEnrolledRule ..|> EnrollmentRule
-    CreditLimitRule ..|> EnrollmentRule
-    CapacityRule ..|> EnrollmentRule
-    PrerequisiteRule ..|> EnrollmentRule
-    ScheduleConflictRule ..|> EnrollmentRule
-    Message ..|> Comparable
-    News ..|> Comparable
+        subgraph INF_MAP["persistence / mapper"]
+            direction LR
+            UserMapper["UserMapper"]:::infra
+            CourseMapper["CourseMapper"]:::infra
+            BookMapper["BookMapper"]:::infra
+            MessageMapper["MessageMapper"]:::infra
+            NewsMapper["NewsMapper"]:::infra
+            RequestMapper["RequestMapper"]:::infra
+            OrderMapper["OrderMapper"]:::infra
+            PaperMapper["ResearchPaperMapper"]:::infra
+            ProjectMapper["ResearchProjectMapper"]:::infra
+            OrgMapper["OrganizationMapper"]:::infra
+            NotifMapper["NotificationMapper"]:::infra
+            LogMapper["LogEntryMapper"]:::infra
+        end
 
-    %% ── User → shared value objects ─────────────────────────
-    User *-- Username
-    User *-- PersonName
-    User *-- Email
-    User --> Faculty
-    User --> Gender
-    User --> Language
-    Employee *-- Money
+        subgraph INF_ORMR["persistence / orm / repository"]
+            direction LR
+            OrmUserRepo["OrmUserRepository"]:::infra
+            OrmCourseRepo["OrmCourseRepository"]:::infra
+            OrmBookRepo["OrmBookRepository"]:::infra
+            OrmMessageRepo["OrmMessageRepository"]:::infra
+            OrmNewsRepo["OrmNewsRepository"]:::infra
+            OrmRequestRepo["OrmRequestRepository"]:::infra
+            OrmOrderRepo["OrmOrderRepository"]:::infra
+            OrmPaperRepo["OrmResearchPaperRepository"]:::infra
+            OrmProjectRepo["OrmResearchProjectRepository"]:::infra
+            OrmOrgRepo["OrmOrganizationRepository"]:::infra
+            OrmNotifRepo["OrmNotificationRepository"]:::infra
+            OrmLogRepo["OrmLogRepository"]:::infra
+        end
 
-    %% ── StudentScope internals ──────────────────────────────
-    Student --> DegreeType
-    Student --> Credits
-    Student "0..1" *-- ResearcherProfile
-    ResearcherProfile *-- Username
+        subgraph INF_MEM["persistence / inmemory  — used in tests"]
+            direction LR
+            MemUserRepo["InMemoryUserRepository"]:::infra
+            MemCourseRepo["InMemoryCourseRepository"]:::infra
+            MemBookRepo["InMemoryBookRepository"]:::infra
+            MemMsgRepo["InMemoryMessageRepository"]:::infra
+            MemNewsRepo["InMemoryNewsRepository"]:::infra
+            MemOrderRepo["InMemoryOrderRepository"]:::infra
+            MemPaperRepo["InMemoryResearchPaperRepository"]:::infra
+            MemProjectRepo["InMemoryResearchProjectRepository"]:::infra
+            MemOrgRepo["InMemoryOrganizationRepository"]:::infra
+            MemNotifRepo["InMemoryNotificationRepository"]:::infra
+            MemLogRepo["InMemoryLogRepository"]:::infra
+        end
+    end
 
-    %% ── TeacherScope internals ──────────────────────────────
-    Teacher --> TeacherPosition
-    Teacher "0..1" *-- ResearcherProfile
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER 5 · DATA STORAGE
+    %% ════════════════════════════════════════════════════════
+    subgraph DATA["💾  DATA STORAGE  (data/*.json)"]
+        direction LR
+        usersJ[("users.json")]:::data
+        coursesJ[("courses.json")]:::data
+        booksJ[("books.json")]:::data
+        messagesJ[("messages.json")]:::data
+        newsJ[("news.json")]:::data
+        requestsJ[("requests.json")]:::data
+        ordersJ[("orders.json")]:::data
+        papersJ[("research_papers.json")]:::data
+        projectsJ[("research_projects.json")]:::data
+        orgsJ[("organizations.json")]:::data
+        notifsJ[("notifications.json")]:::data
+        logsJ[("logs.json")]:::data
+    end
 
-    %% ── StaffScope internals ────────────────────────────────
-    Manager --> ManagerPosition
-    EmployeeResearcher "0..1" *-- ResearcherProfile
+    %% ════════════════════════════════════════════════════════
+    %%   LAYER INTERCONNECTS  (calling / dependency direction)
+    %% ════════════════════════════════════════════════════════
 
-    %% ── CourseScope internals ───────────────────────────────
-    Course *-- CourseId
-    Course *-- Credits
-    Course *-- Capacity
-    Course --> DisciplineType
-    Course "1" *-- "*" Lesson
-    Course "1" *-- "*" Grade
-    Course "0..*" --> "0..*" CourseId
-    Lesson --> LessonType
-    Lesson *-- TimeSlot
-    Lesson *-- Room
-    TimeSlot --> WeekDay
+    %% Bootstrap wires everything together
+    BOOT -->|"wires"| PRES
+    BOOT -->|"wires"| APP
+    BOOT -->|"wires"| DOMAIN
+    BOOT -->|"wires"| INFRA
 
-    %% ── ResearchScope internals ─────────────────────────────
-    ResearchPaper *-- PaperId
-    ResearchPaper *-- Username
-    ResearchPaper *-- JournalName
-    ResearchProject *-- JournalName
-    ResearchProject *-- Username
-    ResearchProject "1" o-- "*" PaperId
+    %% CLI calls Application
+    PRES -->|"invokes use cases"| APP
 
-    %% ── LibraryScope internals ──────────────────────────────
-    Book *-- BookId
-    Book --> Username
+    %% Application calls Domain
+    APP -->|"uses domain model"| DOMAIN
 
-    %% ── MessagingScope internals ────────────────────────────
-    Message *-- Username
-    Message --> UrgencyLevel
-    Message --> MessageStatus
-    News *-- Username
-    Request *-- Username
-    Request --> HelpType
-    Request --> Faculty
-    Request --> UrgencyLevel
-    Request --> RequestStatus
-    Order *-- Username
-    Order --> OrderStatus
-    Notification *-- Username
+    %% Infrastructure implements Domain ports
+    INFRA -->|"implements repository interfaces"| DOM_REPO
 
-    %% ── OrganizationScope internals ─────────────────────────
-    Organization *-- Username
+    %% ORM concrete repos implement the port interfaces
+    OrmUserRepo -->|"implements"| UserRepo
+    OrmCourseRepo -->|"implements"| CourseRepo
+    OrmBookRepo -->|"implements"| BookRepo
+    OrmMessageRepo -->|"implements"| MessageRepo
+    OrmNewsRepo -->|"implements"| NewsRepo
+    OrmRequestRepo -->|"implements"| RequestRepo
+    OrmOrderRepo -->|"implements"| OrderRepo
+    OrmPaperRepo -->|"implements"| PaperRepo
+    OrmProjectRepo -->|"implements"| ProjectRepo
+    OrmOrgRepo -->|"implements"| OrgRepo
+    OrmNotifRepo -->|"implements"| NotifRepo
+    OrmLogRepo -->|"implements"| LogRepo
 
-    %% ── LoggingScope internals ──────────────────────────────
-    LogEntry *-- Username
+    %% In-memory repos also implement the same ports (test doubles)
+    MemUserRepo -.->|"implements"| UserRepo
+    MemCourseRepo -.->|"implements"| CourseRepo
+    MemPaperRepo -.->|"implements"| PaperRepo
+    MemProjectRepo -.->|"implements"| ProjectRepo
 
-    %% ── EnrollmentRules → services ──────────────────────────
-    EnrollmentService o-- "*" EnrollmentRule
-    EnrollmentService ..> EnrollmentDecision
-    PrerequisiteRule --> CourseRepository
-    ScheduleConflictRule --> CourseRepository
+    %% ORM stack delegates to JSON database → files
+    OrmRepo -->|"reads/writes"| DatabaseIf
+    JsonFileDatabase -->|"implements"| DatabaseIf
+    JsonFileDatabase -->|"reads/writes"| DATA
 
-    %% ── DomainServices → repos ──────────────────────────────
-    RoomScheduler --> CourseRepository
-    GpaCalculator --> CourseRepository
-    HIndexCalculator ..> HIndex
-    CitationFormatter ..> PaperFormat
-    PaperPublisher --> ResearchPaperRepository
-    PaperPublisher --> ResearchProjectRepository
-    PaperPublisher --> NotificationRepository
-    PaperPublisher --> NewsRepository
-    PaperPublisher --> UserRepository
-    SubscriptionService --> ResearchProjectRepository
+    %% Mappers used by ORM repos
+    EntityMapper -->|"implemented by"| INF_MAP
 
-    %% ── Repository ports → managed entities ─────────────────
-    UserRepository ..> User
-    CourseRepository ..> Course
-    BookRepository ..> Book
-    MessageRepository ..> Message
-    NewsRepository ..> News
-    RequestRepository ..> Request
-    OrderRepository ..> Order
-    ResearchPaperRepository ..> ResearchPaper
-    ResearchProjectRepository ..> ResearchProject
-    OrganizationRepository ..> Organization
-    NotificationRepository ..> Notification
-    LogRepository ..> LogEntry
+    %% Domain services call domain repositories
+    DOM_SVC -->|"calls"| DOM_REPO
+    DOM_RULES -->|"calls"| DOM_REPO

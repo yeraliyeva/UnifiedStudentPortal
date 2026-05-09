@@ -1,0 +1,942 @@
+classDiagram
+    direction TB
+
+    %% ─────────────────────────────────────────────
+    %%  ENUMERATIONS
+    %% ─────────────────────────────────────────────
+
+    class DegreeType {
+        <<enumeration>>
+        BACHELOR
+        MASTER
+        DOCTORATE
+    }
+
+    class Faculty {
+        <<enumeration>>
+        SITE
+        SEOGI
+        SG
+        KMA
+        ISE
+        BS
+    }
+
+    class Gender {
+        <<enumeration>>
+        MALE
+        FEMALE
+    }
+
+    class Language {
+        <<enumeration>>
+        ENGLISH
+        KAZAKH
+        RUSSIAN
+    }
+
+    class TeacherPosition {
+        <<enumeration>>
+        LECTOR
+        SENIOR_LECTOR
+        PROFESSOR
+    }
+
+    class ManagerPosition {
+        <<enumeration>>
+        OR
+        DEPARTMENT
+        DEANS_OFFICE
+    }
+
+    class DisciplineType {
+        <<enumeration>>
+        MAJOR
+        MINOR
+        FREE
+    }
+
+    class LessonType {
+        <<enumeration>>
+        LECTURE
+        PRACTICE
+        OFFICE_HOURS
+        EXAM
+    }
+
+    class WeekDay {
+        <<enumeration>>
+        MONDAY
+        TUESDAY
+        WEDNESDAY
+        THURSDAY
+        FRIDAY
+        SATURDAY
+        SUNDAY
+    }
+
+    class MessageStatus {
+        <<enumeration>>
+        UNREAD
+        READ
+    }
+
+    class UrgencyLevel {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+    }
+
+    class OrderStatus {
+        <<enumeration>>
+        NEW
+        ACCEPTED
+        REJECTED
+        DONE
+    }
+
+    class RequestStatus {
+        <<enumeration>>
+        PENDING
+        ACCEPTED
+        NOT_APPROVED
+        APPROVED
+        REJECTED
+    }
+
+    class HelpType {
+        <<enumeration>>
+        TRANSCRIPT_FOR_SEMESTER
+        TRANSCRIPT_FOR_YEAR
+        CERTIFICATE_OF_EDUCATION
+        ACADEMIC_MOBILITY
+        COORDINATION_OF_DIPLOMA_TOPIC
+        REQUEST_FOR_CREATING_ORGANIZATION
+    }
+
+    class PaperFormat {
+        <<enumeration>>
+        PLAIN_TEXT
+        BIBTEX
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  SHARED VALUE OBJECTS
+    %% ─────────────────────────────────────────────
+
+    class Username {
+        -value : String
+        +value() : String
+        +equals(Object) : boolean
+        +hashCode() : int
+        +toString() : String
+    }
+
+    class PersonName {
+        <<record>>
+        +first : String
+        +last : String
+        +full() : String
+    }
+
+    class Email {
+        <<record>>
+        +address : String
+        +toString() : String
+    }
+
+    class Money {
+        <<record>>
+        +amount : double
+        +toString() : String
+    }
+
+    class Credits {
+        <<record>>
+        +value : int
+        +SEMESTER_LIMIT$ : Credits
+        +covers(Credits) : boolean
+        +minus(Credits) : Credits
+        +plus(Credits) : Credits
+        +toString() : String
+    }
+
+    class IdSequence {
+        -counter : AtomicInteger
+        +next() : int
+        +peek() : int
+        +seedAtLeast(int)
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  CAPABILITY INTERFACES
+    %% ─────────────────────────────────────────────
+
+    class ResearcherCapable {
+        <<interface>>
+        +isResearcher() : boolean
+        +activateResearcher(field : String)
+        +researcherProfile() : ResearcherProfile
+    }
+
+    class BookBorrowerCapable {
+        <<interface>>
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  USER HIERARCHY
+    %% ─────────────────────────────────────────────
+
+    class User {
+        <<abstract>>
+        -username : Username
+        -passwordHash : String
+        -name : PersonName
+        -gender : Gender
+        -dateOfBirth : LocalDate
+        -email : Email
+        -faculty : Faculty
+        -language : Language
+        +username() : Username
+        +passwordHash() : String
+        +name() : PersonName
+        +gender() : Gender
+        +dateOfBirth() : LocalDate
+        +email() : Email
+        +faculty() : Faculty
+        +language() : Language
+        +changePassword(newHash : String)
+        +changeEmail(Email)
+        +changeLanguage(Language)
+        +matchesPassword(hash : String) : boolean
+        +equals(Object) : boolean
+        +hashCode() : int
+        +toString() : String
+    }
+
+    class Employee {
+        <<abstract>>
+        -salary : Money
+        -hireDate : LocalDate
+        -insuranceNumber : String
+        +salary() : Money
+        +hireDate() : LocalDate
+        +insuranceNumber() : String
+    }
+
+    class Admin {
+    }
+
+    class Student {
+        -degreeType : DegreeType
+        -studyYear : int
+        -availableCredits : Credits
+        -failCount : int
+        -enrolled : Set~CourseId~
+        -completed : Set~CourseId~
+        -researcherProfile : ResearcherProfile
+        +MAX_FAILS$ : int
+        +degreeType() : DegreeType
+        +studyYear() : int
+        +availableCredits() : Credits
+        +failCount() : int
+        +hasReachedFailLimit() : boolean
+        +enrolledCourses() : Set~CourseId~
+        +completedCourses() : Set~CourseId~
+        +recordEnrollment(CourseId, Credits)
+        +recordDrop(CourseId, Credits)
+        +recordCompletion(CourseId)
+        +recordFail()
+        +rehydrate(int, int, Iterable~CourseId~, Iterable~CourseId~)
+        +isResearcher() : boolean
+        +activateResearcher(String)
+        +researcherProfile() : ResearcherProfile
+    }
+
+    class GraduateStudent {
+        -supervisorUsername : Username
+        +supervisor() : Optional~Username~
+        +setSupervisor(Username)
+    }
+
+    class Teacher {
+        -degree : String
+        -position : TeacherPosition
+        -taughtCourses : Set~CourseId~
+        -ratings : List~Integer~
+        -researcherProfile : ResearcherProfile
+        +degree() : String
+        +position() : TeacherPosition
+        +setPosition(TeacherPosition)
+        +taughtCourses() : Set~CourseId~
+        +recordCourseAssignment(CourseId)
+        +addRating(int)
+        +ratings() : List~Integer~
+        +averageRating() : double
+        +rehydrate(Iterable~CourseId~, Iterable~Integer~)
+        +isResearcher() : boolean
+        +activateResearcher(String)
+        +researcherProfile() : ResearcherProfile
+    }
+
+    class Dean {
+    }
+
+    class Manager {
+        -position : ManagerPosition
+        +position() : ManagerPosition
+    }
+
+    class Librarian {
+    }
+
+    class TechSupport {
+    }
+
+    class EmployeeResearcher {
+        -defaultField : String
+        -researcherProfile : ResearcherProfile
+        +defaultField() : String
+        +isResearcher() : boolean
+        +activateResearcher(String)
+        +researcherProfile() : ResearcherProfile
+    }
+
+    class ResearcherProfile {
+        -owner : Username
+        -field : String
+        -subscribedJournals : Set~String~
+        +owner() : Username
+        +field() : String
+        +subscribe(journal : String)
+        +unsubscribe(journal : String)
+        +subscribedJournals() : Set~String~
+        +isSubscribedTo(journal : String) : boolean
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  COURSE AGGREGATE
+    %% ─────────────────────────────────────────────
+
+    class CourseId {
+        <<record>>
+        +value : String
+        +of(int)$ : CourseId
+        +toString() : String
+    }
+
+    class Capacity {
+        <<record>>
+        +max : int
+        +UNLIMITED$ : Capacity
+        +canFit(currentEnrolled : int) : boolean
+        +remaining(currentEnrolled : int) : int
+    }
+
+    class TimeSlot {
+        <<record>>
+        +day : WeekDay
+        +time : String
+        +overlaps(TimeSlot) : boolean
+        +toString() : String
+    }
+
+    class Room {
+        <<record>>
+        +name : String
+        +sameAs(Room) : boolean
+        +toString() : String
+    }
+
+    class Lesson {
+        <<record>>
+        +type : LessonType
+        +slot : TimeSlot
+        +room : Room
+        +isExam() : boolean
+        +toString() : String
+    }
+
+    class Grade {
+        <<record>>
+        +firstHalf : int
+        +secondHalf : int
+        +exam : int
+        +PASSING_TOTAL$ : int
+        +total() : int
+        +isPassing() : boolean
+        +letter() : String
+        +toString() : String
+    }
+
+    class Course {
+        -id : CourseId
+        -name : String
+        -credits : Credits
+        -type : DisciplineType
+        -capacity : Capacity
+        -teacherUsernames : Set~Username~
+        -studentUsernames : Set~Username~
+        -lessons : List~Lesson~
+        -prerequisites : Set~CourseId~
+        -grades : Map~Username, Grade~
+        +id() : CourseId
+        +name() : String
+        +credits() : Credits
+        +type() : DisciplineType
+        +capacity() : Capacity
+        +rename(String)
+        +changeCapacity(Capacity)
+        +enroll(Username)
+        +unenroll(Username)
+        +hasStudent(Username) : boolean
+        +students() : Set~Username~
+        +isFull() : boolean
+        +remainingSeats() : int
+        +assignTeacher(Username)
+        +teachers() : Set~Username~
+        +addLesson(Lesson)
+        +lessons() : List~Lesson~
+        +addPrerequisite(CourseId)
+        +prerequisites() : Set~CourseId~
+        +recordGrade(Username, Grade)
+        +gradeOf(Username) : Optional~Grade~
+        +allGrades() : Map~Username, Grade~
+        +equals(Object) : boolean
+        +hashCode() : int
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  RESEARCH AGGREGATE
+    %% ─────────────────────────────────────────────
+
+    class PaperId {
+        <<record>>
+        +value : int
+        +toString() : String
+    }
+
+    class JournalName {
+        <<record>>
+        +value : String
+        +matches(String) : boolean
+        +toString() : String
+    }
+
+    class HIndex {
+        <<record>>
+        +value : int
+        +MIN_FOR_SUPERVISION$ : HIndex
+        +atLeast(HIndex) : boolean
+    }
+
+    class ResearchPaper {
+        -id : PaperId
+        -title : String
+        -author : Username
+        -journal : JournalName
+        -abstractText : String
+        -pages : int
+        -doi : String
+        -publishedDate : LocalDate
+        -citations : int
+        +id() : PaperId
+        +title() : String
+        +author() : Username
+        +journal() : JournalName
+        +abstractText() : String
+        +pages() : int
+        +doi() : String
+        +publishedDate() : LocalDate
+        +citations() : int
+        +cite()
+        +length() : int
+        +toString() : String
+    }
+
+    class ResearchProject {
+        -id : int
+        -journal : JournalName
+        -topic : String
+        -supervisor : Username
+        -participants : Set~Username~
+        -publishedPapers : List~PaperId~
+        +id() : int
+        +journal() : JournalName
+        +topic() : String
+        +supervisor() : Username
+        +participants() : Set~Username~
+        +publishedPapers() : List~PaperId~
+        +addParticipant(Username)
+        +recordPublication(PaperId)
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  LIBRARY
+    %% ─────────────────────────────────────────────
+
+    class BookId {
+        <<record>>
+        +value : int
+        +toString() : String
+    }
+
+    class Book {
+        -id : BookId
+        -title : String
+        -author : String
+        -borrowedBy : Username
+        +id() : BookId
+        +title() : String
+        +author() : String
+        +isBorrowed() : boolean
+        +borrower() : Optional~Username~
+        +lendTo(Username)
+        +returnFrom(Username)
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  MESSAGING
+    %% ─────────────────────────────────────────────
+
+    class Message {
+        -id : int
+        -sender : Username
+        -recipient : Username
+        -subject : String
+        -body : String
+        -urgency : UrgencyLevel
+        -sentAt : LocalDateTime
+        -status : MessageStatus
+        +id() : int
+        +sender() : Username
+        +recipient() : Username
+        +subject() : String
+        +body() : String
+        +urgency() : UrgencyLevel
+        +sentAt() : LocalDateTime
+        +status() : MessageStatus
+        +markRead()
+        +compareTo(Message) : int
+        +toString() : String
+    }
+
+    class News {
+        -id : int
+        -title : String
+        -body : String
+        -author : Username
+        -publishedAt : LocalDateTime
+        -comments : List~String~
+        -pinned : boolean
+        +id() : int
+        +title() : String
+        +body() : String
+        +author() : Username
+        +publishedAt() : LocalDateTime
+        +comments() : List~String~
+        +isPinned() : boolean
+        +edit(String, String)
+        +addComment(String)
+        +compareTo(News) : int
+        +toString() : String
+    }
+
+    class Request {
+        -id : int
+        -requester : Username
+        -type : HelpType
+        -faculty : Faculty
+        -urgency : UrgencyLevel
+        -additionalInfo : String
+        -status : RequestStatus
+        +id() : int
+        +requester() : Username
+        +type() : HelpType
+        +faculty() : Faculty
+        +urgency() : UrgencyLevel
+        +additionalInfo() : String
+        +status() : RequestStatus
+        +changeStatus(RequestStatus)
+        +toString() : String
+    }
+
+    class Order {
+        -id : int
+        -requester : Username
+        -description : String
+        -createdAt : LocalDate
+        -status : OrderStatus
+        -executor : Username
+        +id() : int
+        +requester() : Username
+        +description() : String
+        +createdAt() : LocalDate
+        +status() : OrderStatus
+        +executor() : Optional~Username~
+        +accept(Username)
+        +reject()
+        +complete()
+        +toString() : String
+    }
+
+    class Notification {
+        <<record>>
+        +recipient : Username
+        +text : String
+        +at : LocalDateTime
+        +of(Username, String)$ : Notification
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  ORGANIZATION
+    %% ─────────────────────────────────────────────
+
+    class Organization {
+        -name : String
+        -head : Username
+        -members : Set~Username~
+        +name() : String
+        +head() : Username
+        +members() : Set~Username~
+        +isMember(Username) : boolean
+        +addMember(Username)
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  LOGGING
+    %% ─────────────────────────────────────────────
+
+    class LogEntry {
+        <<record>>
+        +at : LocalDateTime
+        +actor : Username
+        +action : String
+        +now(Username, String)$ : LogEntry
+        +toString() : String
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  ENROLLMENT RULES  (Chain of Responsibility)
+    %% ─────────────────────────────────────────────
+
+    class EnrollmentRule {
+        <<interface>>
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class EnrollmentDecision {
+        <<record>>
+        +allowed : boolean
+        +reason : String
+        +allow()$ : EnrollmentDecision
+        +deny(String)$ : EnrollmentDecision
+    }
+
+    class MaxFailLimitRule {
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class AlreadyEnrolledRule {
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class CreditLimitRule {
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class CapacityRule {
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class PrerequisiteRule {
+        -courses : CourseRepository
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    class ScheduleConflictRule {
+        -courses : CourseRepository
+        +check(Student, Course) : EnrollmentDecision
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  DOMAIN SERVICES
+    %% ─────────────────────────────────────────────
+
+    class EnrollmentService {
+        -rules : List~EnrollmentRule~
+        +tryEnroll(Student, Course) : EnrollmentDecision
+    }
+
+    class RoomScheduler {
+        -courses : CourseRepository
+        +isAvailable(Room, TimeSlot) : boolean
+    }
+
+    class GpaCalculator {
+        -courses : CourseRepository
+        +of(Student) : double
+    }
+
+    class HIndexCalculator {
+        +calculate(List~ResearchPaper~) : HIndex
+    }
+
+    class CitationFormatter {
+        +format(ResearchPaper, PaperFormat) : String
+    }
+
+    class PaperPublisher {
+        -papers : ResearchPaperRepository
+        -projects : ResearchProjectRepository
+        -notifications : NotificationRepository
+        -news : NewsRepository
+        -users : UserRepository
+        +publish(ResearchPaper)
+    }
+
+    class SubscriptionService {
+        -projects : ResearchProjectRepository
+        +subscribe(ResearcherCapable, String) : boolean
+        +unsubscribe(ResearcherCapable, String)
+    }
+
+    %% ─────────────────────────────────────────────
+    %%  REPOSITORY INTERFACES  (Ports)
+    %% ─────────────────────────────────────────────
+
+    class UserRepository {
+        <<interface>>
+        +save(User)
+        +findByUsername(Username) : Optional~User~
+        +exists(Username) : boolean
+        +delete(Username)
+        +findAll() : Collection~User~
+    }
+
+    class CourseRepository {
+        <<interface>>
+        +save(Course)
+        +findById(CourseId) : Optional~Course~
+        +findAll() : Collection~Course~
+    }
+
+    class BookRepository {
+        <<interface>>
+        +save(Book)
+        +findById(BookId) : Optional~Book~
+        +findFirstAvailableByTitle(String) : Optional~Book~
+        +findAll() : Collection~Book~
+        +delete(BookId)
+    }
+
+    class MessageRepository {
+        <<interface>>
+        +save(Message)
+        +inboxOf(Username) : List~Message~
+    }
+
+    class NewsRepository {
+        <<interface>>
+        +save(News)
+        +findById(int) : Optional~News~
+        +findAllSorted() : List~News~
+        +delete(int)
+    }
+
+    class RequestRepository {
+        <<interface>>
+        +save(Request)
+        +findById(int) : Optional~Request~
+        +findAll() : List~Request~
+        +findByRequester(Username) : List~Request~
+    }
+
+    class OrderRepository {
+        <<interface>>
+        +save(Order)
+        +findById(int) : Optional~Order~
+        +findAll() : List~Order~
+    }
+
+    class ResearchPaperRepository {
+        <<interface>>
+        +save(ResearchPaper)
+        +findById(PaperId) : Optional~ResearchPaper~
+        +findByAuthor(Username) : List~ResearchPaper~
+        +findAll() : Collection~ResearchPaper~
+    }
+
+    class ResearchProjectRepository {
+        <<interface>>
+        +save(ResearchProject)
+        +findByJournal(JournalName) : Optional~ResearchProject~
+        +findAll() : Collection~ResearchProject~
+    }
+
+    class OrganizationRepository {
+        <<interface>>
+        +save(Organization)
+        +findByName(String) : Optional~Organization~
+        +findAll() : Collection~Organization~
+    }
+
+    class NotificationRepository {
+        <<interface>>
+        +save(Notification)
+        +findFor(Username) : List~Notification~
+        +clearFor(Username)
+    }
+
+    class LogRepository {
+        <<interface>>
+        +append(LogEntry)
+        +findAll() : List~LogEntry~
+        +findByActor(Username) : List~LogEntry~
+    }
+
+    %% ═════════════════════════════════════════════
+    %%  RELATIONSHIPS
+    %% ═════════════════════════════════════════════
+
+    %% ── Inheritance ──────────────────────────────
+    User <|-- Admin
+    User <|-- Student
+    User <|-- Employee
+    Student <|-- GraduateStudent
+    Employee <|-- Teacher
+    Employee <|-- Manager
+    Employee <|-- Librarian
+    Employee <|-- TechSupport
+    Employee <|-- EmployeeResearcher
+    Teacher <|-- Dean
+
+    %% ── Interface realisations ───────────────────
+    Student ..|> ResearcherCapable
+    Student ..|> BookBorrowerCapable
+    GraduateStudent ..|> ResearcherCapable
+    Teacher ..|> ResearcherCapable
+    Teacher ..|> BookBorrowerCapable
+    EmployeeResearcher ..|> ResearcherCapable
+
+    MaxFailLimitRule ..|> EnrollmentRule
+    AlreadyEnrolledRule ..|> EnrollmentRule
+    CreditLimitRule ..|> EnrollmentRule
+    CapacityRule ..|> EnrollmentRule
+    PrerequisiteRule ..|> EnrollmentRule
+    ScheduleConflictRule ..|> EnrollmentRule
+
+    Message ..|> Comparable
+    News ..|> Comparable
+
+    %% ── Composition / Aggregation ────────────────
+    User *-- Username : username
+    User *-- PersonName : name
+    User *-- Email : email
+    User --> Faculty : faculty
+    User --> Gender : gender
+    User --> Language : language
+
+    Employee *-- Money : salary
+
+    Student --> DegreeType : degreeType
+    Student --> Credits : availableCredits
+    Student "0..1" *-- ResearcherProfile : researcherProfile
+
+    Teacher --> TeacherPosition : position
+    Teacher "0..1" *-- ResearcherProfile : researcherProfile
+
+    EmployeeResearcher "0..1" *-- ResearcherProfile : researcherProfile
+
+    Manager --> ManagerPosition : position
+
+    ResearcherProfile *-- Username : owner
+
+    Course *-- CourseId : id
+    Course *-- Credits : credits
+    Course *-- Capacity : capacity
+    Course --> DisciplineType : type
+    Course "1" *-- "*" Lesson : lessons
+    Course "1" *-- "*" Grade : grades
+    Course "0..*" --> "0..*" CourseId : prerequisites
+
+    Lesson --> LessonType : type
+    Lesson *-- TimeSlot : slot
+    Lesson *-- Room : room
+
+    TimeSlot --> WeekDay : day
+
+    ResearchPaper *-- PaperId : id
+    ResearchPaper *-- Username : author
+    ResearchPaper *-- JournalName : journal
+
+    ResearchProject *-- JournalName : journal
+    ResearchProject *-- Username : supervisor
+    ResearchProject "1" o-- "*" PaperId : publishedPapers
+    ResearchProject "1" o-- "*" Username : participants
+
+    Book *-- BookId : id
+    Book --> Username : borrowedBy
+
+    Message *-- Username : sender
+    Message *-- Username : recipient
+    Message --> UrgencyLevel : urgency
+    Message --> MessageStatus : status
+
+    News *-- Username : author
+
+    Request *-- Username : requester
+    Request --> HelpType : type
+    Request --> Faculty : faculty
+    Request --> UrgencyLevel : urgency
+    Request --> RequestStatus : status
+
+    Order *-- Username : requester
+    Order --> OrderStatus : status
+    Order --> Username : executor
+
+    Notification *-- Username : recipient
+
+    Organization *-- Username : head
+    Organization "1" o-- "*" Username : members
+
+    LogEntry *-- Username : actor
+
+    %% ── Service dependencies ─────────────────────
+    EnrollmentService o-- "*" EnrollmentRule : rules
+    EnrollmentService ..> EnrollmentDecision : returns
+
+    PrerequisiteRule --> CourseRepository : reads
+    ScheduleConflictRule --> CourseRepository : reads
+    RoomScheduler --> CourseRepository : reads
+    GpaCalculator --> CourseRepository : reads
+    HIndexCalculator ..> HIndex : returns
+    CitationFormatter ..> PaperFormat : uses
+
+    PaperPublisher --> ResearchPaperRepository
+    PaperPublisher --> ResearchProjectRepository
+    PaperPublisher --> NotificationRepository
+    PaperPublisher --> NewsRepository
+    PaperPublisher --> UserRepository
+
+    SubscriptionService --> ResearchProjectRepository
+
+    %% ── Repository → managed entity (all repos must be connected) ──
+    UserRepository ..> User : manages
+    CourseRepository ..> Course : manages
+    BookRepository ..> Book : manages
+    MessageRepository ..> Message : manages
+    NewsRepository ..> News : manages
+    RequestRepository ..> Request : manages
+    OrderRepository ..> Order : manages
+    ResearchPaperRepository ..> ResearchPaper : manages
+    ResearchProjectRepository ..> ResearchProject : manages
+    OrganizationRepository ..> Organization : manages
+    NotificationRepository ..> Notification : manages
+    LogRepository ..> LogEntry : manages

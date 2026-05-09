@@ -1,23 +1,20 @@
 classDiagram
     direction TB
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  LAYER 1 · PRESENTATION — CLI  (src/presentation)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── PRESENTATION ────────────────────────────────────────
     namespace Presentation {
         class Console {
             <<interface>>
-            +println(line String)
-            +print(text String)
-            +readLine(prompt String) String
-            +readInt(prompt String) int
+            +println(String)
+            +print(String)
+            +readLine(String) String
+            +readInt(String) int
         }
         class StdConsole {
-            +println(line String)
-            +print(text String)
-            +readLine(prompt String) String
-            +readInt(prompt String) int
+            +println(String)
+            +print(String)
+            +readLine(String) String
+            +readInt(String) int
         }
         class LoginScreen {
             -users UserRepository
@@ -35,15 +32,15 @@ classDiagram
         }
         class MenuFactory {
             <<interface>>
-            +menuFor(user User) Menu
+            +menuFor(User) Menu
         }
         class BecomeResearcherAction {
             -ctx AppContext
-            +run(rc ResearcherCapable)
+            +run(ResearcherCapable)
         }
         class ResearcherMenuExtension {
             -ctx AppContext
-            +items(rc ResearcherCapable) List~MenuItem~
+            +items(ResearcherCapable) List~MenuItem~
         }
         class AdminMenu {
             -ctx AppContext
@@ -83,10 +80,7 @@ classDiagram
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  BOOTSTRAP  (src/bootstrap)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── BOOTSTRAP ───────────────────────────────────────────
     namespace Bootstrap {
         class AppContext {
             +console Console
@@ -111,7 +105,7 @@ classDiagram
             +citationFormatter CitationFormatter
             +roomScheduler RoomScheduler
             +subscriptionService SubscriptionService
-            +withJsonStorage(dataDir Path)$ AppContext
+            +withJsonStorage(Path)$ AppContext
         }
         class DataSeeder {
             -ctx AppContext
@@ -119,62 +113,59 @@ classDiagram
         }
         class DefaultMenuFactory {
             -ctx AppContext
-            +menuFor(user User) Menu
+            +menuFor(User) Menu
         }
         class IdSequenceWarmup {
-            +warm(ctx AppContext)$
+            +warm(AppContext)$
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  LAYER 2 · APPLICATION — USE CASES  (src/application)
-    %% ══════════════════════════════════════════════════════════════
-
-    namespace ApplicationAdmin {
+    %% ── APPLICATION USE CASES ───────────────────────────────
+    namespace AppAdmin {
         class CreateStudent {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, degree DegreeType, year int) Result~Student~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,DegreeType,int) Result~Student~
         }
         class CreateTeacher {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String, deg String, pos TeacherPosition) Result~Teacher~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String,String,TeacherPosition) Result~Teacher~
         }
         class CreateGradStudent {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, degree DegreeType, year int) Result~GraduateStudent~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,DegreeType,int) Result~GraduateStudent~
         }
         class CreateDean {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String, deg String) Result~Dean~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String,String) Result~Dean~
         }
         class CreateManager {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String, pos ManagerPosition) Result~Manager~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String,ManagerPosition) Result~Manager~
         }
         class CreateLibrarian {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String) Result~Librarian~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String) Result~Librarian~
         }
         class CreateTechSupport {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String) Result~TechSupport~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String) Result~TechSupport~
         }
         class CreateEmpResearcher {
             -users UserRepository
             -log LogRepository
-            +execute(username Username, hash String, name PersonName, gender Gender, dob LocalDate, email Email, faculty Faculty, salary Money, hireDate LocalDate, ins String, field String) Result~EmployeeResearcher~
+            +execute(Username,String,PersonName,Gender,LocalDate,Email,Faculty,Money,LocalDate,String,String) Result~EmployeeResearcher~
         }
         class DeleteUser {
             -users UserRepository
             -log LogRepository
-            +execute(actor Username, target Username) Result~Void~
+            +execute(Username,Username) Result~Void~
         }
         class GenerateAcademicReport {
             -users UserRepository
@@ -191,221 +182,218 @@ classDiagram
         }
     }
 
-    namespace ApplicationCourse {
+    namespace AppCourse {
         class EnrollInCourse {
             -users UserRepository
             -courses CourseRepository
             -enrollment EnrollmentService
             -log LogRepository
-            +execute(student Username, course CourseId) Result~Void~
+            +execute(Username,CourseId) Result~Void~
         }
         class DropCourse {
             -users UserRepository
             -courses CourseRepository
             -log LogRepository
-            +execute(student Username, course CourseId) Result~Void~
+            +execute(Username,CourseId) Result~Void~
         }
         class RecordMarks {
             -users UserRepository
             -courses CourseRepository
             -log LogRepository
-            +execute(teacher Username, course CourseId, student Username, att1 int, att2 int, exam int) Result~Void~
+            +execute(Username,CourseId,Username,int,int,int) Result~Void~
         }
         class AssignTeacher {
             -users UserRepository
             -courses CourseRepository
             -log LogRepository
-            +execute(teacher Username, course CourseId) Result~Void~
+            +execute(Username,CourseId) Result~Void~
         }
         class CreateCourse {
             -courses CourseRepository
             -sequence IdSequence
             -log LogRepository
-            +execute(name String, credits int, type DisciplineType, capacity int) Result~Course~
+            +execute(String,int,DisciplineType,int) Result~Course~
         }
         class SetCourseCapacity {
             -courses CourseRepository
-            +execute(course CourseId, max int) Result~Void~
+            +execute(CourseId,int) Result~Void~
         }
         class SetCoursePrerequisite {
             -courses CourseRepository
-            +execute(course CourseId, prereq CourseId) Result~Void~
+            +execute(CourseId,CourseId) Result~Void~
         }
         class AddLesson {
             -courses CourseRepository
             -scheduler RoomScheduler
-            +execute(course CourseId, type LessonType, day WeekDay, time String, room String) Result~Void~
+            +execute(CourseId,LessonType,WeekDay,String,String) Result~Void~
         }
         class ViewTranscript {
             -users UserRepository
             -courses CourseRepository
             -gpa GpaCalculator
-            +execute(student Username) String
+            +execute(Username) String
         }
     }
 
-    namespace ApplicationLibrary {
+    namespace AppLibrary {
         class BorrowBook {
             -books BookRepository
             -users UserRepository
             -log LogRepository
-            +execute(borrower Username, title String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class ReturnBook {
             -books BookRepository
             -log LogRepository
-            +execute(borrower Username, book BookId) Result~Void~
+            +execute(Username,BookId) Result~Void~
         }
         class AddBook {
             -books BookRepository
             -sequence IdSequence
-            +execute(title String, author String) Result~Book~
+            +execute(String,String) Result~Book~
         }
         class RemoveBook {
             -books BookRepository
-            +execute(book BookId) Result~Void~
+            +execute(BookId) Result~Void~
         }
     }
 
-    namespace ApplicationMessaging {
+    namespace AppMessaging {
         class SendMessage {
             -messages MessageRepository
             -users UserRepository
             -sequence IdSequence
-            +execute(from Username, to Username, subject String, body String, urgency UrgencyLevel) Result~Void~
+            +execute(Username,Username,String,String,UrgencyLevel) Result~Void~
         }
         class PublishNews {
             -news NewsRepository
             -sequence IdSequence
             -log LogRepository
-            +execute(author Username, title String, body String) Result~Void~
+            +execute(Username,String,String) Result~Void~
         }
         class CommentOnNews {
             -news NewsRepository
-            +execute(newsId int, comment String) Result~Void~
+            +execute(int,String) Result~Void~
         }
         class SubmitRequest {
             -requests RequestRepository
             -sequence IdSequence
-            +execute(requester Username, type HelpType, faculty Faculty, urgency UrgencyLevel, info String) Result~Void~
+            +execute(Username,HelpType,Faculty,UrgencyLevel,String) Result~Void~
         }
         class ProcessRequest {
             -requests RequestRepository
             -users UserRepository
-            +execute(requestId int, status RequestStatus) Result~Void~
+            +execute(int,RequestStatus) Result~Void~
         }
         class CreateITOrder {
             -orders OrderRepository
             -sequence IdSequence
-            +execute(requester Username, description String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class AcceptOrder {
             -orders OrderRepository
             -log LogRepository
-            +execute(executor Username, orderId int) Result~Void~
+            +execute(Username,int) Result~Void~
         }
         class CompleteOrder {
             -orders OrderRepository
             -log LogRepository
-            +execute(executor Username, orderId int) Result~Void~
+            +execute(Username,int) Result~Void~
         }
     }
 
-    namespace ApplicationOrganization {
+    namespace AppOrganization {
         class CreateOrganization {
             -organizations OrganizationRepository
             -users UserRepository
             -log LogRepository
-            +execute(head Username, name String) Result~Organization~
+            +execute(Username,String) Result~Organization~
         }
         class JoinOrganization {
             -organizations OrganizationRepository
             -log LogRepository
-            +execute(member Username, orgName String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
     }
 
-    namespace ApplicationResearch {
+    namespace AppResearch {
         class CreateResearchProject {
             -projects ResearchProjectRepository
             -users UserRepository
             -sequence IdSequence
             -log LogRepository
-            +execute(supervisor Username, journal String, topic String) Result~ResearchProject~
+            +execute(Username,String,String) Result~ResearchProject~
         }
         class JoinResearchProject {
             -projects ResearchProjectRepository
             -users UserRepository
-            +execute(participant Username, journal String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class PublishPaper {
             -publisher PaperPublisher
             -users UserRepository
             -sequence IdSequence
-            +execute(author Username, title String, journal String, pages int, doi String) Result~ResearchPaper~
+            +execute(Username,String,String,int,String) Result~ResearchPaper~
         }
         class SubscribeToJournal {
             -subscription SubscriptionService
             -users UserRepository
-            +execute(researcher Username, journal String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class UnsubscribeFromJournal {
             -subscription SubscriptionService
             -users UserRepository
-            +execute(researcher Username, journal String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class GenerateCitation {
             -papers ResearchPaperRepository
             -formatter CitationFormatter
-            +execute(paperId PaperId, format PaperFormat) Result~String~
+            +execute(PaperId,PaperFormat) Result~String~
         }
         class SetSupervisor {
             -users UserRepository
             -projects ResearchProjectRepository
             -hIndex HIndexCalculator
             -papers ResearchPaperRepository
-            +execute(supervisor Username, gradStudent Username) Result~Void~
+            +execute(Username,Username) Result~Void~
         }
     }
 
-    namespace ApplicationUser {
+    namespace AppUser {
         class BecomeResearcher {
             -users UserRepository
             -log LogRepository
-            +execute(user Username, field String) Result~Void~
+            +execute(Username,String) Result~Void~
         }
         class RateTeacher {
             -users UserRepository
             -log LogRepository
-            +execute(student Username, teacher Username, rating int) Result~Void~
+            +execute(Username,Username,int) Result~Void~
         }
         class ComplainAboutStudent {
             -users UserRepository
             -messages MessageRepository
             -sequence IdSequence
-            +execute(teacher Username, student Username, reason String) Result~Void~
+            +execute(Username,Username,String) Result~Void~
         }
         class Result~T~ {
             -value T
             -error String
             -success boolean
-            +ok(value T)$ Result~T~
-            +fail(error String)$ Result~T~
+            +ok(T)$ Result~T~
+            +fail(String)$ Result~T~
             +isOk() boolean
             +value() T
             +error() String
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  LAYER 3 · DOMAIN — CAPABILITIES & USERS  (src/domain/user)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: CAPABILITIES ────────────────────────────────
     namespace DomainCapabilities {
         class ResearcherCapable {
             <<interface>>
             +isResearcher() boolean
-            +activateResearcher(field String)
+            +activateResearcher(String)
             +researcherProfile() ResearcherProfile
         }
         class BookBorrowerCapable {
@@ -413,11 +401,12 @@ classDiagram
         }
         class PasswordHasher {
             <<interface>>
-            +hash(plain String) String
-            +matches(plain String, hash String) boolean
+            +hash(String) String
+            +matches(String,String) boolean
         }
     }
 
+    %% ── DOMAIN: USERS ───────────────────────────────────────
     namespace DomainUsers {
         class User {
             <<abstract>>
@@ -430,20 +419,16 @@ classDiagram
             -faculty Faculty
             -language Language
             +username() Username
-            +passwordHash() String
             +name() PersonName
-            +gender() Gender
-            +dateOfBirth() LocalDate
             +email() Email
             +faculty() Faculty
             +language() Language
-            +changePassword(newHash String)
-            +changeEmail(newEmail Email)
-            +changeLanguage(lang Language)
-            +matchesPassword(hash String) boolean
-            +equals(o Object) boolean
+            +changePassword(String)
+            +changeEmail(Email)
+            +changeLanguage(Language)
+            +matchesPassword(String) boolean
+            +equals(Object) boolean
             +hashCode() int
-            +toString() String
         }
         class Employee {
             <<abstract>>
@@ -466,25 +451,24 @@ classDiagram
             -researcherProfile ResearcherProfile
             +MAX_FAILS$ int
             +degreeType() DegreeType
-            +studyYear() int
             +availableCredits() Credits
             +failCount() int
             +hasReachedFailLimit() boolean
             +enrolledCourses() Set~CourseId~
             +completedCourses() Set~CourseId~
-            +recordEnrollment(id CourseId, cost Credits)
-            +recordDrop(id CourseId, refund Credits)
-            +recordCompletion(id CourseId)
+            +recordEnrollment(CourseId,Credits)
+            +recordDrop(CourseId,Credits)
+            +recordCompletion(CourseId)
             +recordFail()
-            +rehydrate(credits int, fails int, enrolled Iterable~CourseId~, completed Iterable~CourseId~)
+            +rehydrate(int,int,Iterable~CourseId~,Iterable~CourseId~)
             +isResearcher() boolean
-            +activateResearcher(field String)
+            +activateResearcher(String)
             +researcherProfile() ResearcherProfile
         }
         class GraduateStudent {
             -supervisorUsername Username
             +supervisor() Optional~Username~
-            +setSupervisor(s Username)
+            +setSupervisor(Username)
         }
         class Teacher {
             -degree String
@@ -494,15 +478,15 @@ classDiagram
             -researcherProfile ResearcherProfile
             +degree() String
             +position() TeacherPosition
-            +setPosition(p TeacherPosition)
+            +setPosition(TeacherPosition)
             +taughtCourses() Set~CourseId~
-            +recordCourseAssignment(id CourseId)
-            +addRating(r int)
+            +recordCourseAssignment(CourseId)
+            +addRating(int)
             +ratings() List~Integer~
             +averageRating() double
-            +rehydrate(courses Iterable~CourseId~, ratings Iterable~Integer~)
+            +rehydrate(Iterable~CourseId~,Iterable~Integer~)
             +isResearcher() boolean
-            +activateResearcher(field String)
+            +activateResearcher(String)
             +researcherProfile() ResearcherProfile
         }
         class Dean {
@@ -520,7 +504,7 @@ classDiagram
             -researcherProfile ResearcherProfile
             +defaultField() String
             +isResearcher() boolean
-            +activateResearcher(field String)
+            +activateResearcher(String)
             +researcherProfile() ResearcherProfile
         }
         class ResearcherProfile {
@@ -529,17 +513,14 @@ classDiagram
             -subscribedJournals Set~String~
             +owner() Username
             +field() String
-            +subscribe(journal String)
-            +unsubscribe(journal String)
+            +subscribe(String)
+            +unsubscribe(String)
             +subscribedJournals() Set~String~
-            +isSubscribedTo(journal String) boolean
+            +isSubscribedTo(String) boolean
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — COURSE AGGREGATE  (src/domain/course)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: COURSE AGGREGATE ────────────────────────────
     namespace DomainCourse {
         class Course {
             -id CourseId
@@ -551,45 +532,39 @@ classDiagram
             -studentUsernames Set~Username~
             -lessons List~Lesson~
             -prerequisites Set~CourseId~
-            -grades Map~Username, Grade~
+            -grades Map~Username,Grade~
             +id() CourseId
-            +name() String
             +credits() Credits
-            +type() DisciplineType
             +capacity() Capacity
-            +rename(newName String)
-            +changeCapacity(c Capacity)
-            +enroll(student Username)
-            +unenroll(student Username)
-            +hasStudent(student Username) boolean
+            +rename(String)
+            +changeCapacity(Capacity)
+            +enroll(Username)
+            +unenroll(Username)
+            +hasStudent(Username) boolean
             +students() Set~Username~
             +isFull() boolean
             +remainingSeats() int
-            +assignTeacher(teacher Username)
+            +assignTeacher(Username)
             +teachers() Set~Username~
-            +addLesson(l Lesson)
+            +addLesson(Lesson)
             +lessons() List~Lesson~
-            +addPrerequisite(p CourseId)
+            +addPrerequisite(CourseId)
             +prerequisites() Set~CourseId~
-            +recordGrade(student Username, grade Grade)
-            +gradeOf(student Username) Optional~Grade~
-            +allGrades() Map~Username, Grade~
-            +equals(o Object) boolean
-            +hashCode() int
-            +toString() String
+            +recordGrade(Username,Grade)
+            +gradeOf(Username) Optional~Grade~
+            +allGrades() Map~Username,Grade~
         }
         class CourseId {
             <<record>>
             +value String
-            +of(n int)$ CourseId
-            +toString() String
+            +of(int)$ CourseId
         }
         class Capacity {
             <<record>>
             +max int
             +UNLIMITED$ Capacity
-            +canFit(currentEnrolled int) boolean
-            +remaining(currentEnrolled int) int
+            +canFit(int) boolean
+            +remaining(int) int
         }
         class Lesson {
             <<record>>
@@ -597,20 +572,17 @@ classDiagram
             +slot TimeSlot
             +room Room
             +isExam() boolean
-            +toString() String
         }
         class TimeSlot {
             <<record>>
             +day WeekDay
             +time String
-            +overlaps(other TimeSlot) boolean
-            +toString() String
+            +overlaps(TimeSlot) boolean
         }
         class Room {
             <<record>>
             +name String
-            +sameAs(other Room) boolean
-            +toString() String
+            +sameAs(Room) boolean
         }
         class Grade {
             <<record>>
@@ -621,14 +593,10 @@ classDiagram
             +total() int
             +isPassing() boolean
             +letter() String
-            +toString() String
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — RESEARCH AGGREGATE  (src/domain/research)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: RESEARCH ────────────────────────────────────
     namespace DomainResearch {
         class ResearchPaper {
             -id PaperId
@@ -641,17 +609,11 @@ classDiagram
             -publishedDate LocalDate
             -citations int
             +id() PaperId
-            +title() String
             +author() Username
             +journal() JournalName
-            +abstractText() String
-            +pages() int
-            +doi() String
-            +publishedDate() LocalDate
             +citations() int
             +cite()
             +length() int
-            +toString() String
         }
         class ResearchProject {
             -id int
@@ -662,37 +624,30 @@ classDiagram
             -publishedPapers List~PaperId~
             +id() int
             +journal() JournalName
-            +topic() String
             +supervisor() Username
             +participants() Set~Username~
             +publishedPapers() List~PaperId~
-            +addParticipant(u Username)
-            +recordPublication(id PaperId)
-            +toString() String
+            +addParticipant(Username)
+            +recordPublication(PaperId)
         }
         class PaperId {
             <<record>>
             +value int
-            +toString() String
         }
         class JournalName {
             <<record>>
             +value String
-            +matches(other String) boolean
-            +toString() String
+            +matches(String) boolean
         }
         class HIndex {
             <<record>>
             +value int
             +MIN_FOR_SUPERVISION$ HIndex
-            +atLeast(other HIndex) boolean
+            +atLeast(HIndex) boolean
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — LIBRARY  (src/domain/library)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: LIBRARY ─────────────────────────────────────
     namespace DomainLibrary {
         class Book {
             -id BookId
@@ -700,25 +655,18 @@ classDiagram
             -author String
             -borrowedBy Username
             +id() BookId
-            +title() String
-            +author() String
             +isBorrowed() boolean
             +borrower() Optional~Username~
-            +lendTo(user Username)
-            +returnFrom(user Username)
-            +toString() String
+            +lendTo(Username)
+            +returnFrom(Username)
         }
         class BookId {
             <<record>>
             +value int
-            +toString() String
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — MESSAGING  (src/domain/messaging)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: MESSAGING ───────────────────────────────────
     namespace DomainMessaging {
         class Message {
             -id int
@@ -729,17 +677,12 @@ classDiagram
             -urgency UrgencyLevel
             -sentAt LocalDateTime
             -status MessageStatus
-            +id() int
             +sender() Username
             +recipient() Username
-            +subject() String
-            +body() String
             +urgency() UrgencyLevel
-            +sentAt() LocalDateTime
             +status() MessageStatus
             +markRead()
-            +compareTo(o Message) int
-            +toString() String
+            +compareTo(Message) int
         }
         class News {
             -id int
@@ -749,17 +692,10 @@ classDiagram
             -publishedAt LocalDateTime
             -comments List~String~
             -pinned boolean
-            +id() int
-            +title() String
-            +body() String
-            +author() Username
-            +publishedAt() LocalDateTime
-            +comments() List~String~
             +isPinned() boolean
-            +edit(title String, body String)
-            +addComment(comment String)
-            +compareTo(o News) int
-            +toString() String
+            +edit(String,String)
+            +addComment(String)
+            +compareTo(News) int
         }
         class Request {
             -id int
@@ -769,15 +705,8 @@ classDiagram
             -urgency UrgencyLevel
             -additionalInfo String
             -status RequestStatus
-            +id() int
-            +requester() Username
-            +type() HelpType
-            +faculty() Faculty
-            +urgency() UrgencyLevel
-            +additionalInfo() String
             +status() RequestStatus
-            +changeStatus(s RequestStatus)
-            +toString() String
+            +changeStatus(RequestStatus)
         }
         class Order {
             -id int
@@ -786,24 +715,18 @@ classDiagram
             -createdAt LocalDate
             -status OrderStatus
             -executor Username
-            +id() int
-            +requester() Username
-            +description() String
-            +createdAt() LocalDate
             +status() OrderStatus
             +executor() Optional~Username~
-            +accept(executor Username)
+            +accept(Username)
             +reject()
             +complete()
-            +toString() String
         }
         class Notification {
             <<record>>
             +recipient Username
             +text String
             +at LocalDateTime
-            +of(recipient Username, text String)$ Notification
-            +toString() String
+            +of(Username,String)$ Notification
         }
     }
 
@@ -815,9 +738,8 @@ classDiagram
             +name() String
             +head() Username
             +members() Set~Username~
-            +isMember(u Username) boolean
-            +addMember(u Username)
-            +toString() String
+            +isMember(Username) boolean
+            +addMember(Username)
         }
     }
 
@@ -827,76 +749,64 @@ classDiagram
             +at LocalDateTime
             +actor Username
             +action String
-            +now(actor Username, action String)$ LogEntry
-            +toString() String
+            +now(Username,String)$ LogEntry
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — ENROLLMENT RULES  (src/domain/rules)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: ENROLLMENT RULES ────────────────────────────
     namespace DomainRules {
         class EnrollmentRule {
             <<interface>>
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class EnrollmentDecision {
             <<record>>
             +allowed boolean
             +reason String
             +allow()$ EnrollmentDecision
-            +deny(reason String)$ EnrollmentDecision
+            +deny(String)$ EnrollmentDecision
         }
         class MaxFailLimitRule {
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class AlreadyEnrolledRule {
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class CreditLimitRule {
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class CapacityRule {
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class PrerequisiteRule {
             -courses CourseRepository
-            +PrerequisiteRule(courses CourseRepository)
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
         class ScheduleConflictRule {
             -courses CourseRepository
-            +ScheduleConflictRule(courses CourseRepository)
-            +check(student Student, course Course) EnrollmentDecision
+            +check(Student,Course) EnrollmentDecision
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — SERVICES  (src/domain/service)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: SERVICES ────────────────────────────────────
     namespace DomainServices {
         class EnrollmentService {
             -rules List~EnrollmentRule~
-            +EnrollmentService(rules List~EnrollmentRule~)
-            +tryEnroll(student Student, course Course) EnrollmentDecision
+            +tryEnroll(Student,Course) EnrollmentDecision
         }
         class RoomScheduler {
             -courses CourseRepository
-            +RoomScheduler(courses CourseRepository)
-            +isAvailable(room Room, slot TimeSlot) boolean
+            +isAvailable(Room,TimeSlot) boolean
         }
         class GpaCalculator {
             -courses CourseRepository
-            +GpaCalculator(courses CourseRepository)
-            +of(student Student) double
+            +of(Student) double
         }
         class HIndexCalculator {
-            +calculate(papers List~ResearchPaper~) HIndex
+            +calculate(List~ResearchPaper~) HIndex
         }
         class CitationFormatter {
-            +format(paper ResearchPaper, format PaperFormat) String
+            +format(ResearchPaper,PaperFormat) String
         }
         class PaperPublisher {
             -papers ResearchPaperRepository
@@ -904,27 +814,22 @@ classDiagram
             -notifications NotificationRepository
             -news NewsRepository
             -users UserRepository
-            +publish(paper ResearchPaper)
+            +publish(ResearchPaper)
         }
         class SubscriptionService {
             -projects ResearchProjectRepository
-            +subscribe(researcher ResearcherCapable, journal String) boolean
-            +unsubscribe(researcher ResearcherCapable, journal String)
+            +subscribe(ResearcherCapable,String) boolean
+            +unsubscribe(ResearcherCapable,String)
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — SHARED VALUE OBJECTS  (src/domain/shared)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: SHARED VALUE OBJECTS ────────────────────────
     namespace DomainShared {
         class Username {
             -value String
-            +Username(value String)
             +value() String
-            +equals(o Object) boolean
+            +equals(Object) boolean
             +hashCode() int
-            +toString() String
         }
         class PersonName {
             <<record>>
@@ -935,259 +840,199 @@ classDiagram
         class Email {
             <<record>>
             +address String
-            +toString() String
         }
         class Money {
             <<record>>
             +amount double
-            +toString() String
         }
         class Credits {
             <<record>>
             +value int
             +SEMESTER_LIMIT$ Credits
-            +covers(required Credits) boolean
-            +minus(other Credits) Credits
-            +plus(other Credits) Credits
-            +toString() String
+            +covers(Credits) boolean
+            +minus(Credits) Credits
+            +plus(Credits) Credits
         }
         class IdSequence {
             -counter AtomicInteger
             +next() int
             +peek() int
-            +seedAtLeast(n int)
+            +seedAtLeast(int)
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — ENUMERATIONS  (src/domain/enums)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: ENUMERATIONS ────────────────────────────────
     namespace DomainEnums {
-        class DegreeType {
-            <<enumeration>>
-            BACHELOR
+        class DegreeType { <<enumeration>> BACHELOR
             MASTER
-            DOCTORATE
-        }
-        class Faculty {
-            <<enumeration>>
-            SITE
+            DOCTORATE }
+        class Faculty { <<enumeration>> SITE
             SEOGI
             SG
             KMA
             ISE
-            BS
-        }
-        class Gender {
-            <<enumeration>>
-            MALE
-            FEMALE
-        }
-        class Language {
-            <<enumeration>>
-            ENGLISH
+            BS }
+        class Gender { <<enumeration>> MALE
+            FEMALE }
+        class Language { <<enumeration>> ENGLISH
             KAZAKH
-            RUSSIAN
-        }
-        class TeacherPosition {
-            <<enumeration>>
-            LECTOR
+            RUSSIAN }
+        class TeacherPosition { <<enumeration>> LECTOR
             SENIOR_LECTOR
-            PROFESSOR
-        }
-        class ManagerPosition {
-            <<enumeration>>
-            OR
+            PROFESSOR }
+        class ManagerPosition { <<enumeration>> OR
             DEPARTMENT
-            DEANS_OFFICE
-        }
-        class DisciplineType {
-            <<enumeration>>
-            MAJOR
+            DEANS_OFFICE }
+        class DisciplineType { <<enumeration>> MAJOR
             MINOR
-            FREE
-        }
-        class LessonType {
-            <<enumeration>>
-            LECTURE
+            FREE }
+        class LessonType { <<enumeration>> LECTURE
             PRACTICE
             OFFICE_HOURS
-            EXAM
-        }
-        class WeekDay {
-            <<enumeration>>
-            MONDAY
+            EXAM }
+        class WeekDay { <<enumeration>> MONDAY
             TUESDAY
             WEDNESDAY
             THURSDAY
             FRIDAY
             SATURDAY
-            SUNDAY
-        }
-        class MessageStatus {
-            <<enumeration>>
-            UNREAD
-            READ
-        }
-        class UrgencyLevel {
-            <<enumeration>>
-            LOW
+            SUNDAY }
+        class MessageStatus { <<enumeration>> UNREAD
+            READ }
+        class UrgencyLevel { <<enumeration>> LOW
             MEDIUM
-            HIGH
-        }
-        class OrderStatus {
-            <<enumeration>>
-            NEW
+            HIGH }
+        class OrderStatus { <<enumeration>> NEW
             ACCEPTED
             REJECTED
-            DONE
-        }
-        class RequestStatus {
-            <<enumeration>>
-            PENDING
+            DONE }
+        class RequestStatus { <<enumeration>> PENDING
             ACCEPTED
             NOT_APPROVED
             APPROVED
-            REJECTED
-        }
-        class HelpType {
-            <<enumeration>>
-            TRANSCRIPT_FOR_SEMESTER
+            REJECTED }
+        class HelpType { <<enumeration>> TRANSCRIPT_FOR_SEMESTER
             TRANSCRIPT_FOR_YEAR
             CERTIFICATE_OF_EDUCATION
             ACADEMIC_MOBILITY
             COORDINATION_OF_DIPLOMA_TOPIC
-            REQUEST_FOR_CREATING_ORGANIZATION
-        }
-        class PaperFormat {
-            <<enumeration>>
-            PLAIN_TEXT
-            BIBTEX
-        }
+            REQUEST_FOR_CREATING_ORGANIZATION }
+        class PaperFormat { <<enumeration>> PLAIN_TEXT
+            BIBTEX }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  DOMAIN — REPOSITORY PORTS / INTERFACES  (src/domain/repository)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── DOMAIN: REPOSITORY PORTS ────────────────────────────
     namespace DomainRepositoryPorts {
         class UserRepository {
             <<interface>>
-            +save(user User)
-            +findByUsername(username Username) Optional~User~
-            +exists(username Username) boolean
-            +delete(username Username)
+            +save(User)
+            +findByUsername(Username) Optional~User~
+            +exists(Username) boolean
+            +delete(Username)
             +findAll() Collection~User~
         }
         class CourseRepository {
             <<interface>>
-            +save(course Course)
-            +findById(id CourseId) Optional~Course~
+            +save(Course)
+            +findById(CourseId) Optional~Course~
             +findAll() Collection~Course~
         }
         class BookRepository {
             <<interface>>
-            +save(book Book)
-            +findById(id BookId) Optional~Book~
-            +findFirstAvailableByTitle(title String) Optional~Book~
+            +save(Book)
+            +findById(BookId) Optional~Book~
+            +findFirstAvailableByTitle(String) Optional~Book~
             +findAll() Collection~Book~
-            +delete(id BookId)
+            +delete(BookId)
         }
         class MessageRepository {
             <<interface>>
-            +save(message Message)
-            +inboxOf(recipient Username) List~Message~
+            +save(Message)
+            +inboxOf(Username) List~Message~
         }
         class NewsRepository {
             <<interface>>
-            +save(news News)
-            +findById(id int) Optional~News~
+            +save(News)
+            +findById(int) Optional~News~
             +findAllSorted() List~News~
-            +delete(id int)
+            +delete(int)
         }
         class RequestRepository {
             <<interface>>
-            +save(request Request)
-            +findById(id int) Optional~Request~
+            +save(Request)
+            +findById(int) Optional~Request~
             +findAll() List~Request~
-            +findByRequester(requester Username) List~Request~
+            +findByRequester(Username) List~Request~
         }
         class OrderRepository {
             <<interface>>
-            +save(order Order)
-            +findById(id int) Optional~Order~
+            +save(Order)
+            +findById(int) Optional~Order~
             +findAll() List~Order~
         }
         class ResearchPaperRepository {
             <<interface>>
-            +save(paper ResearchPaper)
-            +findById(id PaperId) Optional~ResearchPaper~
-            +findByAuthor(author Username) List~ResearchPaper~
+            +save(ResearchPaper)
+            +findById(PaperId) Optional~ResearchPaper~
+            +findByAuthor(Username) List~ResearchPaper~
             +findAll() Collection~ResearchPaper~
         }
         class ResearchProjectRepository {
             <<interface>>
-            +save(project ResearchProject)
-            +findByJournal(journal JournalName) Optional~ResearchProject~
+            +save(ResearchProject)
+            +findByJournal(JournalName) Optional~ResearchProject~
             +findAll() Collection~ResearchProject~
         }
         class OrganizationRepository {
             <<interface>>
-            +save(org Organization)
-            +findByName(name String) Optional~Organization~
+            +save(Organization)
+            +findByName(String) Optional~Organization~
             +findAll() Collection~Organization~
         }
         class NotificationRepository {
             <<interface>>
-            +save(notification Notification)
-            +findFor(recipient Username) List~Notification~
-            +clearFor(recipient Username)
+            +save(Notification)
+            +findFor(Username) List~Notification~
+            +clearFor(Username)
         }
         class LogRepository {
             <<interface>>
-            +append(entry LogEntry)
+            +append(LogEntry)
             +findAll() List~LogEntry~
-            +findByActor(actor Username) List~LogEntry~
+            +findByActor(Username) List~LogEntry~
         }
     }
 
-    %% ══════════════════════════════════════════════════════════════
-    %%  LAYER 4 · INFRASTRUCTURE  (src/infrastructure)
-    %% ══════════════════════════════════════════════════════════════
-
+    %% ── INFRASTRUCTURE ──────────────────────────────────────
     namespace InfraAuth {
         class PlainPasswordHasher {
-            +hash(plain String) String
-            +matches(plain String, hash String) boolean
+            +hash(String) String
+            +matches(String,String) boolean
         }
     }
-
     namespace InfraI18n {
         class Translator {
             <<interface>>
-            +get(key String) String
-            +fmt(key String, args Object[]) String
+            +get(String) String
+            +fmt(String,Object[]) String
         }
         class PropertiesTranslator {
             -bundle ResourceBundle
-            +get(key String) String
-            +fmt(key String, args Object[]) String
-            +setLanguage(lang Language)
+            +get(String) String
+            +fmt(String,Object[]) String
+            +setLanguage(Language)
         }
     }
-
     namespace InfraLogging {
         class Logger {
             <<interface>>
-            +log(actor Username, action String)
+            +log(Username,String)
         }
         class RepositoryLogger {
             -repository LogRepository
-            +log(actor Username, action String)
+            +log(Username,String)
         }
     }
-
     namespace InfraJson {
         class JsonValue {
             <<sealed>>
@@ -1196,108 +1041,82 @@ classDiagram
             +asDouble() double
             +asBoolean() boolean
             +asArray() List~JsonValue~
-            +asObject() Map~String, JsonValue~
+            +asObject() Map~String,JsonValue~
             +isNull() boolean
         }
-        class JsonString {
-            +value String
-        }
-        class JsonNumber {
-            +value double
-        }
-        class JsonBool {
-            +value boolean
-        }
-        class JsonNull {
-        }
-        class JsonArray {
-            +elements List~JsonValue~
-        }
+        class JsonString { +value String }
+        class JsonNumber { +value double }
+        class JsonBool   { +value boolean }
+        class JsonNull   { }
+        class JsonArray  { +elements List~JsonValue~ }
         class JsonObject {
-            +fields Map~String, JsonValue~
-            +get(key String) JsonValue
-            +has(key String) boolean
+            +fields Map~String,JsonValue~
+            +get(String) JsonValue
+            +has(String) boolean
         }
-        class JsonReader {
-            +parse(text String)$ JsonValue
-        }
-        class JsonWriter {
-            +write(value JsonValue)$ String
-        }
+        class JsonReader  { +parse(String)$ JsonValue }
+        class JsonWriter  { +write(JsonValue)$ String }
         class JsonObjectBuilder {
-            -fields Map~String, JsonValue~
-            +put(key String, value JsonValue) JsonObjectBuilder
-            +put(key String, value String) JsonObjectBuilder
-            +put(key String, value int) JsonObjectBuilder
-            +put(key String, value double) JsonObjectBuilder
-            +put(key String, value boolean) JsonObjectBuilder
+            +put(String,JsonValue) JsonObjectBuilder
+            +put(String,String) JsonObjectBuilder
+            +put(String,int) JsonObjectBuilder
+            +put(String,double) JsonObjectBuilder
+            +put(String,boolean) JsonObjectBuilder
             +build() JsonObject
         }
     }
-
     namespace InfraDatabase {
         class Database {
             <<interface>>
-            +readTable(name String) List~JsonValue~
-            +writeTable(name String, rows List~JsonValue~)
+            +readTable(String) List~JsonValue~
+            +writeTable(String,List~JsonValue~)
         }
         class JsonFileDatabase {
             -root Path
-            +JsonFileDatabase(root Path)
-            +readTable(name String) List~JsonValue~
-            +writeTable(name String, rows List~JsonValue~)
+            +readTable(String) List~JsonValue~
+            +writeTable(String,List~JsonValue~)
         }
     }
-
     namespace InfraOrm {
         class EntityMapper~T,ID~ {
             <<interface>>
-            +toJson(entity T) JsonValue
-            +fromJson(json JsonValue) T
-            +idOf(entity T) ID
-            +idAsString(id ID) String
+            +toJson(T) JsonValue
+            +fromJson(JsonValue) T
+            +idOf(T) ID
+            +idAsString(ID) String
         }
         class Repository~T,ID~ {
             -db Database
             -tableName String
             -mapper EntityMapper~T,ID~
-            +save(entity T) T
-            +create(entity T) T
-            +update(entity T) T
-            +find(id ID) Optional~T~
-            +findById(id ID) Optional~T~
+            +save(T) T
+            +find(ID) Optional~T~
             +findAll() List~T~
-            +delete(entity T) boolean
-            +deleteAll() int
+            +delete(T) boolean
             +count() int
             +select() QueryBuilder~T,ID~
-            +where(field String, op Op, value Object) QueryBuilder~T,ID~
-            +whereEq(field String, value Object) QueryBuilder~T,ID~
+            +where(String,Op,Object) QueryBuilder~T,ID~
         }
         class QueryBuilder~T,ID~ {
             -conditions List~Condition~
-            -typedPredicate Predicate~T~
-            -ordering Comparator~T~
-            -limit int
-            -offset int
-            +where(field String, op Op, value Object) QueryBuilder~T,ID~
-            +whereEq(field String, value Object) QueryBuilder~T,ID~
-            +whereContains(field String, value Object) QueryBuilder~T,ID~
-            +whereMatch(predicate Predicate~T~) QueryBuilder~T,ID~
-            +orderBy(comparator Comparator~T~) QueryBuilder~T,ID~
-            +limit(n int) QueryBuilder~T,ID~
-            +offset(n int) QueryBuilder~T,ID~
+            +where(String,Op,Object) QueryBuilder~T,ID~
+            +whereEq(String,Object) QueryBuilder~T,ID~
+            +whereContains(String,Object) QueryBuilder~T,ID~
+            +whereMatch(Predicate~T~) QueryBuilder~T,ID~
+            +orderBy(Comparator~T~) QueryBuilder~T,ID~
+            +limit(int) QueryBuilder~T,ID~
+            +offset(int) QueryBuilder~T,ID~
             +list() List~T~
             +first() Optional~T~
             +count() int
             +deleteAll() int
-            +updateEach(consumer Consumer~T~) int
+            +updateEach(Consumer~T~) int
         }
         class Condition {
             +field String
             +op Op
             +value Object
-            +matches(row JsonObject) boolean
+            +matches(JsonObject) boolean
         }
         class Op {
             <<enumeration>>
@@ -1313,248 +1132,65 @@ classDiagram
             IN
         }
         class MapperHelpers {
-            +strOrNull(obj JsonObject, key String)$ String
-            +intVal(obj JsonObject, key String)$ int
-            +doubleVal(obj JsonObject, key String)$ double
-            +boolVal(obj JsonObject, key String)$ boolean
+            +strOrNull(JsonObject,String)$ String
+            +intVal(JsonObject,String)$ int
+            +doubleVal(JsonObject,String)$ double
+            +boolVal(JsonObject,String)$ boolean
         }
     }
 
-    namespace InfraMappers {
-        class UserMapper {
-            +toJson(user User) JsonValue
-            +fromJson(json JsonValue) User
-            +idOf(user User) Username
-            +idAsString(id Username) String
-        }
-        class CourseMapper {
-            +toJson(course Course) JsonValue
-            +fromJson(json JsonValue) Course
-            +idOf(course Course) CourseId
-            +idAsString(id CourseId) String
-        }
-        class BookMapper {
-            +toJson(book Book) JsonValue
-            +fromJson(json JsonValue) Book
-            +idOf(book Book) BookId
-            +idAsString(id BookId) String
-        }
-        class MessageMapper {
-            +toJson(msg Message) JsonValue
-            +fromJson(json JsonValue) Message
-            +idOf(msg Message) Integer
-            +idAsString(id Integer) String
-        }
-        class NewsMapper {
-            +toJson(news News) JsonValue
-            +fromJson(json JsonValue) News
-            +idOf(news News) Integer
-            +idAsString(id Integer) String
-        }
-        class RequestMapper {
-            +toJson(req Request) JsonValue
-            +fromJson(json JsonValue) Request
-            +idOf(req Request) Integer
-            +idAsString(id Integer) String
-        }
-        class OrderMapper {
-            +toJson(order Order) JsonValue
-            +fromJson(json JsonValue) Order
-            +idOf(order Order) Integer
-            +idAsString(id Integer) String
-        }
-        class ResearchPaperMapper {
-            +toJson(paper ResearchPaper) JsonValue
-            +fromJson(json JsonValue) ResearchPaper
-            +idOf(paper ResearchPaper) PaperId
-            +idAsString(id PaperId) String
-        }
-        class ResearchProjectMapper {
-            +toJson(project ResearchProject) JsonValue
-            +fromJson(json JsonValue) ResearchProject
-            +idOf(project ResearchProject) Integer
-            +idAsString(id Integer) String
-        }
-        class OrganizationMapper {
-            +toJson(org Organization) JsonValue
-            +fromJson(json JsonValue) Organization
-            +idOf(org Organization) String
-            +idAsString(id String) String
-        }
-        class NotificationMapper {
-            +toJson(n Notification) JsonValue
-            +fromJson(json JsonValue) Notification
-            +idOf(n Notification) String
-            +idAsString(id String) String
-        }
-        class LogEntryMapper {
-            +toJson(entry LogEntry) JsonValue
-            +fromJson(json JsonValue) LogEntry
-            +idOf(entry LogEntry) String
-            +idAsString(id String) String
-        }
-    }
-
+    %% ORM-backed repositories (implement domain ports via generic Repository)
     namespace InfraOrmRepos {
-        class OrmUserRepository {
-            -repo Repository~User, Username~
-            +save(user User)
-            +findByUsername(username Username) Optional~User~
-            +exists(username Username) boolean
-            +delete(username Username)
-            +findAll() Collection~User~
-        }
-        class OrmCourseRepository {
-            -repo Repository~Course, CourseId~
-            +save(course Course)
-            +findById(id CourseId) Optional~Course~
-            +findAll() Collection~Course~
-        }
-        class OrmBookRepository {
-            -repo Repository~Book, BookId~
-            +save(book Book)
-            +findById(id BookId) Optional~Book~
-            +findFirstAvailableByTitle(title String) Optional~Book~
-            +findAll() Collection~Book~
-            +delete(id BookId)
-        }
-        class OrmMessageRepository {
-            -repo Repository~Message, Integer~
-            +save(message Message)
-            +inboxOf(recipient Username) List~Message~
-        }
-        class OrmNewsRepository {
-            -repo Repository~News, Integer~
-            +save(news News)
-            +findById(id int) Optional~News~
-            +findAllSorted() List~News~
-            +delete(id int)
-        }
-        class OrmRequestRepository {
-            -repo Repository~Request, Integer~
-            +save(request Request)
-            +findById(id int) Optional~Request~
-            +findAll() List~Request~
-            +findByRequester(requester Username) List~Request~
-        }
-        class OrmOrderRepository {
-            -repo Repository~Order, Integer~
-            +save(order Order)
-            +findById(id int) Optional~Order~
-            +findAll() List~Order~
-        }
-        class OrmResearchPaperRepository {
-            -repo Repository~ResearchPaper, PaperId~
-            +save(paper ResearchPaper)
-            +findById(id PaperId) Optional~ResearchPaper~
-            +findByAuthor(author Username) List~ResearchPaper~
-            +findAll() Collection~ResearchPaper~
-        }
-        class OrmResearchProjectRepository {
-            -repo Repository~ResearchProject, Integer~
-            +save(project ResearchProject)
-            +findByJournal(journal JournalName) Optional~ResearchProject~
-            +findAll() Collection~ResearchProject~
-        }
-        class OrmOrganizationRepository {
-            -repo Repository~Organization, String~
-            +save(org Organization)
-            +findByName(name String) Optional~Organization~
-            +findAll() Collection~Organization~
-        }
-        class OrmNotificationRepository {
-            -repo Repository~Notification, String~
-            +save(notification Notification)
-            +findFor(recipient Username) List~Notification~
-            +clearFor(recipient Username)
-        }
-        class OrmLogRepository {
-            -repo Repository~LogEntry, String~
-            +append(entry LogEntry)
-            +findAll() List~LogEntry~
-            +findByActor(actor Username) List~LogEntry~
-        }
+        class OrmUserRepository         { -repo Repository~User,Username~ }
+        class OrmCourseRepository       { -repo Repository~Course,CourseId~ }
+        class OrmBookRepository         { -repo Repository~Book,BookId~ }
+        class OrmMessageRepository      { -repo Repository~Message,Integer~ }
+        class OrmNewsRepository         { -repo Repository~News,Integer~ }
+        class OrmRequestRepository      { -repo Repository~Request,Integer~ }
+        class OrmOrderRepository        { -repo Repository~Order,Integer~ }
+        class OrmResearchPaperRepository  { -repo Repository~ResearchPaper,PaperId~ }
+        class OrmResearchProjectRepository{ -repo Repository~ResearchProject,Integer~ }
+        class OrmOrganizationRepository { -repo Repository~Organization,String~ }
+        class OrmNotificationRepository { -repo Repository~Notification,String~ }
+        class OrmLogRepository          { -repo Repository~LogEntry,String~ }
     }
 
+    %% Entity mappers (implement EntityMapper interface)
+    namespace InfraMappers {
+        class UserMapper             { }
+        class CourseMapper           { }
+        class BookMapper             { }
+        class MessageMapper          { }
+        class NewsMapper             { }
+        class RequestMapper          { }
+        class OrderMapper            { }
+        class ResearchPaperMapper    { }
+        class ResearchProjectMapper  { }
+        class OrganizationMapper     { }
+        class NotificationMapper     { }
+        class LogEntryMapper         { }
+    }
+
+    %% In-memory repos for tests (implement same domain ports)
     namespace InfraInMemory {
-        class InMemoryUserRepository {
-            -store Map~Username, User~
-            +save(user User)
-            +findByUsername(username Username) Optional~User~
-            +exists(username Username) boolean
-            +delete(username Username)
-            +findAll() Collection~User~
-        }
-        class InMemoryCourseRepository {
-            -store Map~CourseId, Course~
-            +save(course Course)
-            +findById(id CourseId) Optional~Course~
-            +findAll() Collection~Course~
-        }
-        class InMemoryBookRepository {
-            -store Map~BookId, Book~
-            +save(book Book)
-            +findById(id BookId) Optional~Book~
-            +findFirstAvailableByTitle(title String) Optional~Book~
-            +findAll() Collection~Book~
-            +delete(id BookId)
-        }
-        class InMemoryMessageRepository {
-            -store List~Message~
-            +save(message Message)
-            +inboxOf(recipient Username) List~Message~
-        }
-        class InMemoryNewsRepository {
-            -store Map~Integer, News~
-            +save(news News)
-            +findById(id int) Optional~News~
-            +findAllSorted() List~News~
-            +delete(id int)
-        }
-        class InMemoryOrderRepository {
-            -store Map~Integer, Order~
-            +save(order Order)
-            +findById(id int) Optional~Order~
-            +findAll() List~Order~
-        }
-        class InMemoryResearchPaperRepository {
-            -store Map~PaperId, ResearchPaper~
-            +save(paper ResearchPaper)
-            +findById(id PaperId) Optional~ResearchPaper~
-            +findByAuthor(author Username) List~ResearchPaper~
-            +findAll() Collection~ResearchPaper~
-        }
-        class InMemoryResearchProjectRepository {
-            -store Map~Integer, ResearchProject~
-            +save(project ResearchProject)
-            +findByJournal(journal JournalName) Optional~ResearchProject~
-            +findAll() Collection~ResearchProject~
-        }
-        class InMemoryOrganizationRepository {
-            -store Map~String, Organization~
-            +save(org Organization)
-            +findByName(name String) Optional~Organization~
-            +findAll() Collection~Organization~
-        }
-        class InMemoryNotificationRepository {
-            -store List~Notification~
-            +save(notification Notification)
-            +findFor(recipient Username) List~Notification~
-            +clearFor(recipient Username)
-        }
-        class InMemoryLogRepository {
-            -store List~LogEntry~
-            +append(entry LogEntry)
-            +findAll() List~LogEntry~
-            +findByActor(actor Username) List~LogEntry~
-        }
+        class InMemoryUserRepository              { -store Map~Username,User~ }
+        class InMemoryCourseRepository            { -store Map~CourseId,Course~ }
+        class InMemoryBookRepository              { -store Map~BookId,Book~ }
+        class InMemoryMessageRepository           { -store List~Message~ }
+        class InMemoryNewsRepository              { -store Map~Integer,News~ }
+        class InMemoryOrderRepository             { -store Map~Integer,Order~ }
+        class InMemoryResearchPaperRepository     { -store Map~PaperId,ResearchPaper~ }
+        class InMemoryResearchProjectRepository   { -store Map~Integer,ResearchProject~ }
+        class InMemoryOrganizationRepository      { -store Map~String,Organization~ }
+        class InMemoryNotificationRepository      { -store List~Notification~ }
+        class InMemoryLogRepository               { -store List~LogEntry~ }
     }
 
-    %% ══════════════════════════════════════════════════════════════
+    %% ════════════════════════════════════════════════════════
     %%  RELATIONSHIPS
-    %% ══════════════════════════════════════════════════════════════
+    %% ════════════════════════════════════════════════════════
 
-    %% ── Inheritance  <|-- ────────────────────────────────────────
+    %% ── Inheritance  <|-- ────────────────────────────────────
     User <|-- Admin
     User <|-- Student
     User <|-- Employee
@@ -1565,8 +1201,25 @@ classDiagram
     Employee <|-- TechSupport
     Employee <|-- EmployeeResearcher
     Teacher <|-- Dean
+    JsonValue <|-- JsonString
+    JsonValue <|-- JsonNumber
+    JsonValue <|-- JsonBool
+    JsonValue <|-- JsonNull
+    JsonValue <|-- JsonArray
+    JsonValue <|-- JsonObject
 
-    %% ── Interface realisations  ..|> ─────────────────────────────
+    %% ── Realisation  ..|> ────────────────────────────────────
+    StdConsole ..|> Console
+    DefaultMenuFactory ..|> MenuFactory
+    AdminMenu ..|> Menu
+    StudentMenu ..|> Menu
+    GraduateStudentMenu ..|> Menu
+    TeacherMenu ..|> Menu
+    DeanMenu ..|> Menu
+    ManagerMenu ..|> Menu
+    LibrarianMenu ..|> Menu
+    TechSupportMenu ..|> Menu
+    EmployeeResearcherMenu ..|> Menu
     Student ..|> ResearcherCapable
     Student ..|> BookBorrowerCapable
     GraduateStudent ..|> ResearcherCapable
@@ -1579,21 +1232,22 @@ classDiagram
     CapacityRule ..|> EnrollmentRule
     PrerequisiteRule ..|> EnrollmentRule
     ScheduleConflictRule ..|> EnrollmentRule
-    StdConsole ..|> Console
-    DefaultMenuFactory ..|> MenuFactory
-    AdminMenu ..|> Menu
-    StudentMenu ..|> Menu
-    GraduateStudentMenu ..|> Menu
-    TeacherMenu ..|> Menu
-    DeanMenu ..|> Menu
-    ManagerMenu ..|> Menu
-    LibrarianMenu ..|> Menu
-    TechSupportMenu ..|> Menu
-    EmployeeResearcherMenu ..|> Menu
     PlainPasswordHasher ..|> PasswordHasher
     PropertiesTranslator ..|> Translator
     RepositoryLogger ..|> Logger
     JsonFileDatabase ..|> Database
+    UserMapper ..|> EntityMapper~T,ID~
+    CourseMapper ..|> EntityMapper~T,ID~
+    BookMapper ..|> EntityMapper~T,ID~
+    MessageMapper ..|> EntityMapper~T,ID~
+    NewsMapper ..|> EntityMapper~T,ID~
+    RequestMapper ..|> EntityMapper~T,ID~
+    OrderMapper ..|> EntityMapper~T,ID~
+    ResearchPaperMapper ..|> EntityMapper~T,ID~
+    ResearchProjectMapper ..|> EntityMapper~T,ID~
+    OrganizationMapper ..|> EntityMapper~T,ID~
+    NotificationMapper ..|> EntityMapper~T,ID~
+    LogEntryMapper ..|> EntityMapper~T,ID~
     OrmUserRepository ..|> UserRepository
     OrmCourseRepository ..|> CourseRepository
     OrmBookRepository ..|> BookRepository
@@ -1620,20 +1274,19 @@ classDiagram
     Message ..|> Comparable
     News ..|> Comparable
 
-    %% ── Composition  *-- (part cannot exist without whole) ───────
+    %% ── Composition  *-- ─────────────────────────────────────
     User *-- Username : username
     User *-- PersonName : name
     User *-- Email : email
     Employee *-- Money : salary
-    Student "0..1" *-- ResearcherProfile : researcherProfile
-    Teacher "0..1" *-- ResearcherProfile : researcherProfile
-    EmployeeResearcher "0..1" *-- ResearcherProfile : researcherProfile
+    Student "0..1" *-- ResearcherProfile
+    Teacher "0..1" *-- ResearcherProfile
+    EmployeeResearcher "0..1" *-- ResearcherProfile
     ResearcherProfile *-- Username : owner
     Course *-- CourseId : id
     Course *-- Credits : credits
     Course *-- Capacity : capacity
     Course "1" *-- "0..*" Lesson : lessons
-    Course "1" *-- "0..*" Grade : grades
     Lesson *-- TimeSlot : slot
     Lesson *-- Room : room
     ResearchPaper *-- PaperId : id
@@ -1642,260 +1295,203 @@ classDiagram
     ResearchProject *-- JournalName : journal
     ResearchProject *-- Username : supervisor
     Book *-- BookId : id
-    Message *-- Username : sender
-    Message *-- Username : recipient
+    Message *-- Username : sender/recipient
     News *-- Username : author
     Request *-- Username : requester
     Order *-- Username : requester
     Notification *-- Username : recipient
     Organization *-- Username : head
     LogEntry *-- Username : actor
+    QueryBuilder~T,ID~ "1" *-- "0..*" Condition : conditions
 
-    %% ── Aggregation  o-- (part can exist independently) ──────────
+    %% ── Aggregation  o-- ─────────────────────────────────────
     ResearchProject "1" o-- "0..*" PaperId : publishedPapers
     ResearchProject "1" o-- "0..*" Username : participants
     Organization "1" o-- "1..*" Username : members
-    Student "1" o-- "0..*" CourseId : enrolled
-    Student "1" o-- "0..*" CourseId : completed
+    Student "1" o-- "0..*" CourseId : enrolled/completed
     Teacher "1" o-- "0..*" CourseId : taughtCourses
     Course "1" o-- "0..*" CourseId : prerequisites
+    Course "1" o-- "0..*" Grade : grades
     EnrollmentService "1" o-- "1..*" EnrollmentRule : rules
 
-    %% ── Association  --> (navigable reference) ───────────────────
-    User --> Faculty : faculty
-    User --> Gender : gender
-    User --> Language : language
-    Student --> DegreeType : degreeType
+    %% ── Association  --> ─────────────────────────────────────
+    User --> Faculty
+    User --> Gender
+    User --> Language
+    Student --> DegreeType
     Student --> Credits : availableCredits
-    Teacher --> TeacherPosition : position
-    Manager --> ManagerPosition : position
-    Course --> DisciplineType : type
-    Lesson --> LessonType : type
-    TimeSlot --> WeekDay : day
-    Message --> UrgencyLevel : urgency
-    Message --> MessageStatus : status
-    Request --> HelpType : type
-    Request --> Faculty : faculty
-    Request --> UrgencyLevel : urgency
-    Request --> RequestStatus : status
-    Order --> OrderStatus : status
-    Order --> Username : "0..1 executor"
-    Book --> Username : "0..1 borrowedBy"
-    GraduateStudent --> Username : "0..1 supervisorUsername"
+    Teacher --> TeacherPosition
+    Manager --> ManagerPosition
+    Course --> DisciplineType
+    Lesson --> LessonType
+    TimeSlot --> WeekDay
+    Message --> UrgencyLevel
+    Message --> MessageStatus
+    Request --> HelpType
+    Request --> Faculty
+    Request --> UrgencyLevel
+    Request --> RequestStatus
+    Order --> OrderStatus
+    Order "0..1" --> Username : executor
+    Book "0..1" --> Username : borrowedBy
+    GraduateStudent "0..1" --> Username : supervisorUsername
+    Condition --> Op
 
-    %% ── Dependency  ..> (uses/calls) ─────────────────────────────
-    %% Bootstrap wires the full system
-    AppContext ..> UserRepository : wires
-    AppContext ..> CourseRepository : wires
-    AppContext ..> BookRepository : wires
-    AppContext ..> MessageRepository : wires
-    AppContext ..> NewsRepository : wires
-    AppContext ..> RequestRepository : wires
-    AppContext ..> OrderRepository : wires
-    AppContext ..> ResearchPaperRepository : wires
-    AppContext ..> ResearchProjectRepository : wires
-    AppContext ..> OrganizationRepository : wires
-    AppContext ..> NotificationRepository : wires
-    AppContext ..> LogRepository : wires
-    AppContext ..> EnrollmentService : wires
-    AppContext ..> PaperPublisher : wires
-    DefaultMenuFactory ..> AppContext : uses
-
-    %% CLI → Application use cases
-    LoginScreen ..> UserRepository : calls
-    LoginScreen ..> PasswordHasher : calls
-    AdminMenu ..> AppContext : calls
-    StudentMenu ..> AppContext : calls
-    GraduateStudentMenu ..> AppContext : calls
-    TeacherMenu ..> AppContext : calls
-    DeanMenu ..> AppContext : calls
-    ManagerMenu ..> AppContext : calls
-    LibrarianMenu ..> AppContext : calls
-    TechSupportMenu ..> AppContext : calls
-    EmployeeResearcherMenu ..> AppContext : calls
-
-    %% Application Admin → repos
-    CreateStudent ..> UserRepository : calls
-    CreateStudent ..> LogRepository : calls
-    CreateTeacher ..> UserRepository : calls
-    CreateTeacher ..> LogRepository : calls
-    CreateGradStudent ..> UserRepository : calls
-    CreateDean ..> UserRepository : calls
-    CreateManager ..> UserRepository : calls
-    CreateLibrarian ..> UserRepository : calls
-    CreateTechSupport ..> UserRepository : calls
-    CreateEmpResearcher ..> UserRepository : calls
-    DeleteUser ..> UserRepository : calls
-    DeleteUser ..> LogRepository : calls
-    GenerateAcademicReport ..> UserRepository : calls
-    GenerateAcademicReport ..> CourseRepository : calls
-    GenerateAcademicReport ..> GpaCalculator : calls
-    GenerateTopResearcherNews ..> UserRepository : calls
-    GenerateTopResearcherNews ..> ResearchPaperRepository : calls
-    GenerateTopResearcherNews ..> NewsRepository : calls
-    GenerateTopResearcherNews ..> HIndexCalculator : calls
-
-    %% Application Course → repos/services
-    EnrollInCourse ..> UserRepository : calls
-    EnrollInCourse ..> CourseRepository : calls
-    EnrollInCourse ..> EnrollmentService : calls
-    EnrollInCourse ..> LogRepository : calls
-    DropCourse ..> UserRepository : calls
-    DropCourse ..> CourseRepository : calls
-    DropCourse ..> LogRepository : calls
-    RecordMarks ..> UserRepository : calls
-    RecordMarks ..> CourseRepository : calls
-    RecordMarks ..> LogRepository : calls
-    AssignTeacher ..> UserRepository : calls
-    AssignTeacher ..> CourseRepository : calls
-    CreateCourse ..> CourseRepository : calls
-    CreateCourse ..> IdSequence : calls
-    CreateCourse ..> LogRepository : calls
-    SetCourseCapacity ..> CourseRepository : calls
-    SetCoursePrerequisite ..> CourseRepository : calls
-    AddLesson ..> CourseRepository : calls
-    AddLesson ..> RoomScheduler : calls
-    ViewTranscript ..> UserRepository : calls
-    ViewTranscript ..> CourseRepository : calls
-    ViewTranscript ..> GpaCalculator : calls
-
-    %% Application Library
-    BorrowBook ..> BookRepository : calls
-    BorrowBook ..> UserRepository : calls
-    BorrowBook ..> LogRepository : calls
-    ReturnBook ..> BookRepository : calls
-    ReturnBook ..> LogRepository : calls
-    AddBook ..> BookRepository : calls
-    AddBook ..> IdSequence : calls
-    RemoveBook ..> BookRepository : calls
-
-    %% Application Messaging
-    SendMessage ..> MessageRepository : calls
-    SendMessage ..> UserRepository : calls
-    SendMessage ..> IdSequence : calls
-    PublishNews ..> NewsRepository : calls
-    PublishNews ..> IdSequence : calls
-    PublishNews ..> LogRepository : calls
-    CommentOnNews ..> NewsRepository : calls
-    SubmitRequest ..> RequestRepository : calls
-    SubmitRequest ..> IdSequence : calls
-    ProcessRequest ..> RequestRepository : calls
-    ProcessRequest ..> UserRepository : calls
-    CreateITOrder ..> OrderRepository : calls
-    CreateITOrder ..> IdSequence : calls
-    AcceptOrder ..> OrderRepository : calls
-    AcceptOrder ..> LogRepository : calls
-    CompleteOrder ..> OrderRepository : calls
-    CompleteOrder ..> LogRepository : calls
-
-    %% Application Organization
-    CreateOrganization ..> OrganizationRepository : calls
-    CreateOrganization ..> UserRepository : calls
-    CreateOrganization ..> LogRepository : calls
-    JoinOrganization ..> OrganizationRepository : calls
-    JoinOrganization ..> LogRepository : calls
-
-    %% Application Research
-    CreateResearchProject ..> ResearchProjectRepository : calls
-    CreateResearchProject ..> UserRepository : calls
-    CreateResearchProject ..> IdSequence : calls
-    CreateResearchProject ..> LogRepository : calls
-    JoinResearchProject ..> ResearchProjectRepository : calls
-    JoinResearchProject ..> UserRepository : calls
-    PublishPaper ..> PaperPublisher : calls
-    PublishPaper ..> UserRepository : calls
-    PublishPaper ..> IdSequence : calls
-    SubscribeToJournal ..> SubscriptionService : calls
-    SubscribeToJournal ..> UserRepository : calls
-    UnsubscribeFromJournal ..> SubscriptionService : calls
-    UnsubscribeFromJournal ..> UserRepository : calls
-    GenerateCitation ..> ResearchPaperRepository : calls
-    GenerateCitation ..> CitationFormatter : calls
-    SetSupervisor ..> UserRepository : calls
-    SetSupervisor ..> ResearchProjectRepository : calls
-    SetSupervisor ..> HIndexCalculator : calls
-    SetSupervisor ..> ResearchPaperRepository : calls
-
-    %% Application User
-    BecomeResearcher ..> UserRepository : calls
-    BecomeResearcher ..> LogRepository : calls
-    RateTeacher ..> UserRepository : calls
-    RateTeacher ..> LogRepository : calls
-    ComplainAboutStudent ..> UserRepository : calls
-    ComplainAboutStudent ..> MessageRepository : calls
-    ComplainAboutStudent ..> IdSequence : calls
-
-    %% Domain Rules → repos
-    PrerequisiteRule ..> CourseRepository : reads
-    ScheduleConflictRule ..> CourseRepository : reads
-
+    %% ── Dependency  ..> ──────────────────────────────────────
+    %% Bootstrap
+    AppContext ..> UserRepository
+    AppContext ..> CourseRepository
+    AppContext ..> BookRepository
+    AppContext ..> MessageRepository
+    AppContext ..> NewsRepository
+    AppContext ..> RequestRepository
+    AppContext ..> OrderRepository
+    AppContext ..> ResearchPaperRepository
+    AppContext ..> ResearchProjectRepository
+    AppContext ..> OrganizationRepository
+    AppContext ..> NotificationRepository
+    AppContext ..> LogRepository
+    AppContext ..> EnrollmentService
+    AppContext ..> PaperPublisher
+    DefaultMenuFactory ..> AppContext
+    LoginScreen ..> UserRepository
+    LoginScreen ..> PasswordHasher
+    %% Admin use cases
+    CreateStudent ..> UserRepository
+    CreateStudent ..> LogRepository
+    CreateTeacher ..> UserRepository
+    CreateGradStudent ..> UserRepository
+    CreateDean ..> UserRepository
+    CreateManager ..> UserRepository
+    CreateLibrarian ..> UserRepository
+    CreateTechSupport ..> UserRepository
+    CreateEmpResearcher ..> UserRepository
+    DeleteUser ..> UserRepository
+    DeleteUser ..> LogRepository
+    GenerateAcademicReport ..> UserRepository
+    GenerateAcademicReport ..> CourseRepository
+    GenerateAcademicReport ..> GpaCalculator
+    GenerateTopResearcherNews ..> UserRepository
+    GenerateTopResearcherNews ..> ResearchPaperRepository
+    GenerateTopResearcherNews ..> NewsRepository
+    GenerateTopResearcherNews ..> HIndexCalculator
+    %% Course use cases
+    EnrollInCourse ..> UserRepository
+    EnrollInCourse ..> CourseRepository
+    EnrollInCourse ..> EnrollmentService
+    EnrollInCourse ..> LogRepository
+    DropCourse ..> UserRepository
+    DropCourse ..> CourseRepository
+    DropCourse ..> LogRepository
+    RecordMarks ..> UserRepository
+    RecordMarks ..> CourseRepository
+    RecordMarks ..> LogRepository
+    AssignTeacher ..> UserRepository
+    AssignTeacher ..> CourseRepository
+    CreateCourse ..> CourseRepository
+    CreateCourse ..> IdSequence
+    CreateCourse ..> LogRepository
+    SetCourseCapacity ..> CourseRepository
+    SetCoursePrerequisite ..> CourseRepository
+    AddLesson ..> CourseRepository
+    AddLesson ..> RoomScheduler
+    ViewTranscript ..> UserRepository
+    ViewTranscript ..> CourseRepository
+    ViewTranscript ..> GpaCalculator
+    %% Library use cases
+    BorrowBook ..> BookRepository
+    BorrowBook ..> UserRepository
+    BorrowBook ..> LogRepository
+    ReturnBook ..> BookRepository
+    ReturnBook ..> LogRepository
+    AddBook ..> BookRepository
+    AddBook ..> IdSequence
+    RemoveBook ..> BookRepository
+    %% Messaging use cases
+    SendMessage ..> MessageRepository
+    SendMessage ..> UserRepository
+    SendMessage ..> IdSequence
+    PublishNews ..> NewsRepository
+    PublishNews ..> IdSequence
+    PublishNews ..> LogRepository
+    CommentOnNews ..> NewsRepository
+    SubmitRequest ..> RequestRepository
+    SubmitRequest ..> IdSequence
+    ProcessRequest ..> RequestRepository
+    ProcessRequest ..> UserRepository
+    CreateITOrder ..> OrderRepository
+    CreateITOrder ..> IdSequence
+    AcceptOrder ..> OrderRepository
+    AcceptOrder ..> LogRepository
+    CompleteOrder ..> OrderRepository
+    CompleteOrder ..> LogRepository
+    %% Org use cases
+    CreateOrganization ..> OrganizationRepository
+    CreateOrganization ..> UserRepository
+    CreateOrganization ..> LogRepository
+    JoinOrganization ..> OrganizationRepository
+    JoinOrganization ..> LogRepository
+    %% Research use cases
+    CreateResearchProject ..> ResearchProjectRepository
+    CreateResearchProject ..> UserRepository
+    CreateResearchProject ..> IdSequence
+    CreateResearchProject ..> LogRepository
+    JoinResearchProject ..> ResearchProjectRepository
+    JoinResearchProject ..> UserRepository
+    PublishPaper ..> PaperPublisher
+    PublishPaper ..> UserRepository
+    PublishPaper ..> IdSequence
+    SubscribeToJournal ..> SubscriptionService
+    SubscribeToJournal ..> UserRepository
+    UnsubscribeFromJournal ..> SubscriptionService
+    UnsubscribeFromJournal ..> UserRepository
+    GenerateCitation ..> ResearchPaperRepository
+    GenerateCitation ..> CitationFormatter
+    SetSupervisor ..> UserRepository
+    SetSupervisor ..> ResearchProjectRepository
+    SetSupervisor ..> HIndexCalculator
+    SetSupervisor ..> ResearchPaperRepository
+    %% User use cases
+    BecomeResearcher ..> UserRepository
+    BecomeResearcher ..> LogRepository
+    RateTeacher ..> UserRepository
+    RateTeacher ..> LogRepository
+    ComplainAboutStudent ..> UserRepository
+    ComplainAboutStudent ..> MessageRepository
+    ComplainAboutStudent ..> IdSequence
     %% Domain Services → repos
-    EnrollmentService ..> EnrollmentDecision : produces
-    RoomScheduler ..> CourseRepository : reads
-    GpaCalculator ..> CourseRepository : reads
-    HIndexCalculator ..> HIndex : produces
-    CitationFormatter ..> PaperFormat : uses
-    PaperPublisher ..> ResearchPaperRepository : reads/writes
-    PaperPublisher ..> ResearchProjectRepository : reads/writes
-    PaperPublisher ..> NotificationRepository : writes
-    PaperPublisher ..> NewsRepository : writes
-    PaperPublisher ..> UserRepository : reads
-    SubscriptionService ..> ResearchProjectRepository : reads
-
-    %% Repository ports → managed entities
-    UserRepository ..> User : manages
-    CourseRepository ..> Course : manages
-    BookRepository ..> Book : manages
-    MessageRepository ..> Message : manages
-    NewsRepository ..> News : manages
-    RequestRepository ..> Request : manages
-    OrderRepository ..> Order : manages
-    ResearchPaperRepository ..> ResearchPaper : manages
-    ResearchProjectRepository ..> ResearchProject : manages
-    OrganizationRepository ..> Organization : manages
-    NotificationRepository ..> Notification : manages
-    LogRepository ..> LogEntry : manages
-
-    %% Infrastructure ORM delegates to Database + Mappers
-    OrmUserRepository ..> Repository~T,ID~ : delegates
-    OrmCourseRepository ..> Repository~T,ID~ : delegates
-    OrmBookRepository ..> Repository~T,ID~ : delegates
-    OrmMessageRepository ..> Repository~T,ID~ : delegates
-    OrmNewsRepository ..> Repository~T,ID~ : delegates
-    OrmRequestRepository ..> Repository~T,ID~ : delegates
-    OrmOrderRepository ..> Repository~T,ID~ : delegates
-    OrmResearchPaperRepository ..> Repository~T,ID~ : delegates
-    OrmResearchProjectRepository ..> Repository~T,ID~ : delegates
-    OrmOrganizationRepository ..> Repository~T,ID~ : delegates
-    OrmNotificationRepository ..> Repository~T,ID~ : delegates
-    OrmLogRepository ..> Repository~T,ID~ : delegates
-    Repository~T,ID~ ..> Database : reads/writes
-    Repository~T,ID~ ..> EntityMapper~T,ID~ : serializes via
-    Repository~T,ID~ ..> QueryBuilder~T,ID~ : creates
-    QueryBuilder~T,ID~ ..> Database : reads
-    QueryBuilder~T,ID~ ..> EntityMapper~T,ID~ : materializes via
-    QueryBuilder~T,ID~ "1" *-- "0..*" Condition : conditions
-    Condition ..> Op : uses
-    JsonFileDatabase ..> JsonReader : parses via
-    JsonFileDatabase ..> JsonWriter : serializes via
-    JsonReader ..> JsonValue : produces
-    JsonWriter ..> JsonValue : consumes
-    EntityMapper~T,ID~ ..|> UserMapper
-    EntityMapper~T,ID~ ..|> CourseMapper
-    EntityMapper~T,ID~ ..|> BookMapper
-    EntityMapper~T,ID~ ..|> MessageMapper
-    EntityMapper~T,ID~ ..|> NewsMapper
-    EntityMapper~T,ID~ ..|> RequestMapper
-    EntityMapper~T,ID~ ..|> OrderMapper
-    EntityMapper~T,ID~ ..|> ResearchPaperMapper
-    EntityMapper~T,ID~ ..|> ResearchProjectMapper
-    EntityMapper~T,ID~ ..|> OrganizationMapper
-    EntityMapper~T,ID~ ..|> NotificationMapper
-    EntityMapper~T,ID~ ..|> LogEntryMapper
-    JsonValue <|-- JsonString
-    JsonValue <|-- JsonNumber
-    JsonValue <|-- JsonBool
-    JsonValue <|-- JsonNull
-    JsonValue <|-- JsonArray
-    JsonValue <|-- JsonObject
-    RepositoryLogger ..> LogRepository : appends to
+    PrerequisiteRule ..> CourseRepository
+    ScheduleConflictRule ..> CourseRepository
+    EnrollmentService ..> EnrollmentDecision
+    RoomScheduler ..> CourseRepository
+    GpaCalculator ..> CourseRepository
+    HIndexCalculator ..> HIndex
+    CitationFormatter ..> PaperFormat
+    PaperPublisher ..> ResearchPaperRepository
+    PaperPublisher ..> ResearchProjectRepository
+    PaperPublisher ..> NotificationRepository
+    PaperPublisher ..> NewsRepository
+    PaperPublisher ..> UserRepository
+    SubscriptionService ..> ResearchProjectRepository
+    %% Repository ports → entities
+    UserRepository ..> User
+    CourseRepository ..> Course
+    BookRepository ..> Book
+    MessageRepository ..> Message
+    NewsRepository ..> News
+    RequestRepository ..> Request
+    OrderRepository ..> Order
+    ResearchPaperRepository ..> ResearchPaper
+    ResearchProjectRepository ..> ResearchProject
+    OrganizationRepository ..> Organization
+    NotificationRepository ..> Notification
+    LogRepository ..> LogEntry
+    %% ORM internals
+    Repository~T,ID~ ..> Database
+    Repository~T,ID~ ..> EntityMapper~T,ID~
+    Repository~T,ID~ ..> QueryBuilder~T,ID~
+    QueryBuilder~T,ID~ ..> Database
+    QueryBuilder~T,ID~ ..> EntityMapper~T,ID~
+    JsonFileDatabase ..> JsonReader
+    JsonFileDatabase ..> JsonWriter
+    RepositoryLogger ..> LogRepository

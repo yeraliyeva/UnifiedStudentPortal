@@ -1,0 +1,113 @@
+flowchart LR
+    %% ==========================================
+    %% COLOR PALETTES & STYLING
+    %% ==========================================
+    classDef actorPrimary fill:#FDEBD0,stroke:#D35400,stroke-width:2px,color:#000
+    classDef actorSecondary fill:#D6EAF8,stroke:#2980B9,stroke-width:2px,color:#000
+    classDef systemActor fill:#E8DAEF,stroke:#8E44AD,stroke-width:2px,color:#000
+    
+    classDef ucBase fill:#F8F9FA,stroke:#343A40,stroke-width:1px,color:#000
+    classDef ucCore fill:#EAFAF1,stroke:#27AE60,stroke-width:1px,color:#000
+    classDef ucMgmt fill:#FDEDEC,stroke:#C0392B,stroke-width:1px,color:#000
+    classDef ucAuto fill:#F9EBEA,stroke:#A93226,stroke-width:1px,color:#000,stroke-dasharray: 5 5
+
+    %% ==========================================
+    %% PRIMARY ACTORS (Producers)
+    %% ==========================================
+    Student((🎓 Student)):::actorPrimary
+    Teacher((👨‍🏫 Teacher)):::actorPrimary
+    Manager((📊 Manager)):::actorPrimary
+    Admin((🛡️ Admin)):::actorPrimary
+
+    %% ==========================================
+    %% SECONDARY ACTORS (Consumers)
+    %% ==========================================
+    Dean((👨‍💼 Dean)):::actorSecondary
+    System[[⚙️ Automated System]]:::systemActor
+
+    %% ==========================================
+    %% SYSTEM BOUNDARY: Part 1
+    %% ==========================================
+    subgraph UMS_Academic [Academic & Management Subsystem]
+        direction TB
+
+        %% --- Shared / Reusable Modules ---
+        subgraph Mod_Auth [Global / Base Functions]
+            direction TB
+            UC_Login([Log In]):::ucBase
+            UC_Profile([View / Edit Personal Info]):::ucBase
+            UC_Lang([Change Language]):::ucBase
+            UC_Msg([Send Message / View Inbox]):::ucBase
+            UC_News([View / Comment on News]):::ucBase
+            UC_SubmitReq([Submit Request]):::ucBase
+            UC_ViewMyReq([View My Requests]):::ucBase
+        end
+
+        %% --- Academic Module ---
+        subgraph Mod_Acad [Academic Operations]
+            direction TB
+            UC_ViewEnrolled([View Enrolled Courses]):::ucCore
+            UC_Enroll([Enroll in Course]):::ucCore
+            UC_Drop([Drop Course]):::ucCore
+            UC_Transcript([View Transcript & GPA]):::ucCore
+            UC_RateTch([View Teacher Info & Rate]):::ucCore
+            UC_Orgs([Create / Join / View Organizations]):::ucCore
+            
+            UC_ViewTaught([View Taught Courses]):::ucCore
+            UC_PutMarks([Put Marks / Attestations]):::ucCore
+            UC_ViewAttest([View Student Attestations]):::ucCore
+            UC_OfficeHours([View Office Hours Schedule]):::ucCore
+            UC_Complaint([Send Formal Complaint]):::ucCore
+        end
+
+        %% --- Management Module ---
+        subgraph Mod_Mgmt [Management & Administration]
+            direction TB
+            UC_ViewAllUsers([View All Users]):::ucMgmt
+            UC_CreateUser([Create Users / Roles]):::ucMgmt
+            UC_DeleteUser([Remove User]):::ucMgmt
+            UC_Logs([View Global Logs / User Logs]):::ucMgmt
+            
+            UC_ViewReq([View Filtered Requests]):::ucMgmt
+            UC_ProcessReq([Process / Approve Request]):::ucMgmt
+            UC_CreateCourse([Create Course]):::ucMgmt
+            UC_AssignCourse([Assign Teacher to Course]):::ucMgmt
+            UC_AddLesson([Add Lesson to Course]):::ucMgmt
+            UC_ManageNews([Add / Edit / Delete News]):::ucMgmt
+            UC_Stats([View Statistics & Students by GPA]):::ucMgmt
+        end
+
+        %% --- Automated Background Jobs ---
+        subgraph Mod_Auto [Automated System Triggers]
+            direction TB
+            SYS_CalcGPA([Auto-Calculate GPA]):::ucAuto
+            SYS_CheckLimits([Enforce Academic Limits]):::ucAuto
+            SYS_MsgRouting([Route Status Update Messages]):::ucAuto
+        end
+    end
+
+    %% ==========================================
+    %% COUPLING & INCLUDES (Internal Logic)
+    %% ==========================================
+    UC_Enroll -.->|<<includes>>| SYS_CheckLimits
+    UC_Transcript -.->|<<includes>>| SYS_CalcGPA
+    UC_ProcessReq -.->|<<includes>>| SYS_MsgRouting
+    SYS_MsgRouting -.->|<<includes>>| UC_Msg
+
+    %% ==========================================
+    %% ACTOR CONNECTIONS
+    %% ==========================================
+    Student & Teacher & Admin & Manager --> UC_Login & UC_Profile & UC_Lang & UC_Msg & UC_News & UC_SubmitReq & UC_ViewMyReq
+
+    Student --> UC_ViewEnrolled & UC_Enroll & UC_Drop & UC_Transcript & UC_RateTch & UC_Orgs
+    Teacher --> UC_ViewTaught & UC_PutMarks & UC_ViewAttest & UC_OfficeHours & UC_Complaint
+
+    Admin --> UC_ViewAllUsers & UC_CreateUser & UC_DeleteUser & UC_Logs & UC_ManageNews
+    Manager --> UC_ViewReq & UC_ProcessReq & UC_CreateCourse & UC_AssignCourse & UC_AddLesson & UC_ManageNews & UC_Stats
+
+    UC_Complaint -->|Routed to| Dean
+    UC_SubmitReq -->|Processed by| Dean
+    Dean --> UC_ViewReq & UC_ProcessReq
+
+    System --> SYS_CalcGPA & SYS_CheckLimits & SYS_MsgRouting
+```

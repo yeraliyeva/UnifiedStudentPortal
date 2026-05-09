@@ -1,0 +1,117 @@
+
+flowchart LR
+    %% ==========================================
+    %% COLOR PALETTES & STYLING
+    %% ==========================================
+    classDef actorPrimary fill:#FDEBD0,stroke:#D35400,stroke-width:2px,color:#000
+    classDef actorSecondary fill:#D6EAF8,stroke:#2980B9,stroke-width:2px,color:#000
+    classDef systemActor fill:#E8DAEF,stroke:#8E44AD,stroke-width:2px,color:#000
+    
+    classDef ucBase fill:#F8F9FA,stroke:#343A40,stroke-width:1px,color:#000
+    classDef ucRes fill:#E8F6F3,stroke:#1ABC9C,stroke-width:1px,color:#000
+    classDef ucAuto fill:#F9EBEA,stroke:#A93226,stroke-width:1px,color:#000,stroke-dasharray: 5 5
+
+    %% ==========================================
+    %% PRIMARY ACTORS (Producers)
+    %% ==========================================
+    Student((🎓 Student)):::actorPrimary
+    Grad((🎓 Grad Student)):::actorPrimary
+    Teacher((👨‍🏫 Teacher)):::actorPrimary
+    EmpRes((🔬 Employee Res.)):::actorPrimary
+    Admin((🛡️ Admin)):::actorPrimary
+
+    %% ==========================================
+    %% SECONDARY ACTORS (Consumers)
+    %% ==========================================
+    TechSupport((🛠️ Tech Support)):::actorSecondary
+    Librarian((📚 Librarian)):::actorSecondary
+    System[[⚙️ Automated System]]:::systemActor
+
+    %% ==========================================
+    %% SYSTEM BOUNDARY: Part 2
+    %% ==========================================
+    subgraph UMS_ResSupport [Research, Library & Support Subsystem]
+        direction TB
+
+        %% --- Shared / Reusable Modules ---
+        subgraph Mod_Auth [Global / Base Functions]
+            direction TB
+            UC_Login([Log In]):::ucBase
+            UC_Profile([View / Edit Personal Info]):::ucBase
+            UC_Lang([Change Language]):::ucBase
+            UC_Msg([Send Message / View Inbox]):::ucBase
+            UC_News([View / Comment on News]):::ucBase
+            UC_SubmitReq([Submit Request]):::ucBase
+            UC_ViewMyReq([View My Requests]):::ucBase
+        end
+
+        %% --- Research Module ---
+        subgraph Mod_Res [Research Publications]
+            direction TB
+            UC_ViewRes([View Research Cabinet]):::ucRes
+            UC_Publish([Publish Research Paper]):::ucRes
+            UC_CreateProj([Create Research Project]):::ucRes
+            UC_PrintPapers([Print Papers Sorted]):::ucRes
+            UC_SetSup([Set PhD/Master Supervisor]):::ucRes
+        end
+
+        %% --- Library Module ---
+        subgraph Mod_Lib [Library System]
+            direction TB
+            UC_ViewBooks([View All Books]):::ucRes
+            UC_ManageBooks([Add / Remove Books]):::ucRes
+            UC_BorrowReturn([Borrow / Return Book]):::ucRes
+        end
+
+        %% --- Tech Support Module ---
+        subgraph Mod_Support [Technical Support Operations]
+            direction TB
+            UC_OrderSupport([Create IT Support Ticket]):::ucBase
+            UC_ViewNewOrders([View New / My Orders]):::ucBase
+            UC_ProcessOrder([Accept / Complete Order]):::ucBase
+            UC_FixSys([Run Fix System Diagnostics]):::ucBase
+        end
+
+        %% --- Automated Background Jobs ---
+        subgraph Mod_Auto [Automated System Triggers]
+            direction TB
+            SYS_CalcHIndex([Auto-Calculate H-Index]):::ucAuto
+            SYS_NewsGen([Auto-Generate News on Publish]):::ucAuto
+            SYS_Notify([Notify Project Subscribers]):::ucAuto
+            SYS_MsgRouting([Route Status Update Messages]):::ucAuto
+            UC_TopRes([Generate Top Researcher News]):::ucAuto
+        end
+    end
+
+    %% ==========================================
+    %% COUPLING & INCLUDES (Internal Logic)
+    %% ==========================================
+    UC_Publish -.->|<<includes>>| SYS_CalcHIndex
+    UC_Publish -.->|<<includes>>| SYS_NewsGen
+    UC_Publish -.->|<<includes>>| SYS_Notify
+    UC_ProcessOrder -.->|<<includes>>| SYS_MsgRouting
+    SYS_MsgRouting -.->|<<includes>>| UC_Msg
+
+    %% ==========================================
+    %% ACTOR CONNECTIONS
+    %% ==========================================
+    Student & Teacher & EmpRes & Admin --> UC_Login & UC_Profile & UC_Lang & UC_Msg & UC_News & UC_SubmitReq & UC_ViewMyReq
+
+    Student --> UC_ViewBooks & UC_BorrowReturn
+    Teacher --> UC_ViewBooks & UC_BorrowReturn
+    
+    Grad --> UC_ViewRes & UC_Publish & UC_CreateProj & UC_PrintPapers & UC_SetSup
+    Teacher --> UC_ViewRes & UC_Publish & UC_CreateProj & UC_PrintPapers
+    EmpRes --> UC_ViewRes & UC_Publish & UC_CreateProj & UC_PrintPapers
+
+    Teacher --> UC_OrderSupport
+    Admin --> UC_TopRes
+
+    UC_OrderSupport -->|Routed to| TechSupport
+    TechSupport --> UC_ViewNewOrders & UC_ProcessOrder & UC_FixSys
+    
+    Librarian --> UC_ViewBooks & UC_ManageBooks
+    SYS_Notify -->|Alerts| Librarian
+
+    System --> SYS_CalcHIndex & SYS_NewsGen & SYS_Notify & SYS_MsgRouting
+

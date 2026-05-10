@@ -1,0 +1,1265 @@
+# University Management System — Class Diagram
+
+> One file, four focused diagrams. Each diagram colors classes by package so layer
+> boundaries stay visible. Render in any mermaid-aware tool (mermaid.live,
+> GitHub, VS Code preview).
+
+## 1. Domain — Users, Capabilities, Value Objects
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgUser   fill:#FDEBD0,stroke:#D35400,stroke-width:1.5px,color:#000
+    classDef pkgIface  fill:#D6EAF8,stroke:#2980B9,stroke-width:1.5px,color:#000
+    classDef pkgShared fill:#F4ECF7,stroke:#8E44AD,stroke-width:1.2px,color:#000
+
+    %% ==== capability interfaces ====
+    class ResearcherCapable {
+        <<interface>>
+        +isResearcher() boolean
+        +activateResearcher(field)
+        +researcherProfile() ResearcherProfile
+    }
+
+    class BookBorrowerCapable {
+        <<interface>>
+    }
+
+    class ResearcherProfile {
+        -owner: Username
+        -field: String
+        -subscribedJournals: Set~String~
+        +subscribe(journal)
+        +unsubscribe(journal)
+        +isSubscribedTo(journal) boolean
+    }
+
+    %% ==== abstract user base ====
+    class User {
+        <<abstract>>
+        -username: Username
+        -passwordHash: String
+        -name: PersonName
+        -email: Email
+        -faculty: Faculty
+        -language: Language
+        +matchesPassword(hash) boolean
+        +changeEmail(e)
+        +changeLanguage(lang)
+    }
+
+    class Employee {
+        <<abstract>>
+        -salary: Money
+        -hireDate: LocalDate
+        -insuranceNumber: String
+    }
+
+    %% ==== concrete users ====
+    class Student {
+        -degreeType: DegreeType
+        -studyYear: int
+        -availableCredits: Credits
+        -failCount: int
+        -enrolled: Set~CourseId~
+        -completed: Set~CourseId~
+        -researcherProfile: ResearcherProfile
+        +recordEnrollment(id, cost)
+        +recordDrop(id, refund)
+        +recordCompletion(id)
+        +recordFail()
+        +rehydrate(...)
+    }
+
+    class GraduateStudent {
+        -supervisorUsername: Username
+        +setSupervisor(u)
+    }
+
+    class Teacher {
+        -degree: String
+        -position: TeacherPosition
+        -taughtCourses: Set~CourseId~
+        -ratings: List~Integer~
+        -researcherProfile: ResearcherProfile
+        +recordCourseAssignment(id)
+        +addRating(r)
+        +averageRating() double
+    }
+
+    class Dean
+    class Manager {
+        -position: ManagerPosition
+    }
+    class EmployeeResearcher {
+        -defaultField: String
+        -researcherProfile: ResearcherProfile
+    }
+    class Librarian
+    class TechSupport
+    class Admin
+
+    %% ==== value objects ====
+    class Username {
+        -value: String
+        +value() String
+    }
+    class PersonName {
+        +first: String
+        +last: String
+        +full() String
+    }
+    class Email {
+        +address: String
+    }
+    class Money {
+        +amount: double
+    }
+    class Credits {
+        +value: int
+        +covers(other) boolean
+        +minus(other) Credits
+        +plus(other) Credits
+    }
+    class IdSequence {
+        -counter: AtomicInteger
+        +next() int
+        +seedAtLeast(n)
+    }
+
+    %% ==== inheritance ====
+    User <|-- Student
+    Student <|-- GraduateStudent
+    User <|-- Employee
+    Employee <|-- Teacher
+    Teacher <|-- Dean
+    Employee <|-- EmployeeResearcher
+    Employee <|-- Manager
+    Employee <|-- Librarian
+    Employee <|-- TechSupport
+    User <|-- Admin
+
+    %% ==== capability implementations ====
+    Student            ..|> ResearcherCapable
+    Student            ..|> BookBorrowerCapable
+    GraduateStudent    ..|> ResearcherCapable
+    Teacher            ..|> ResearcherCapable
+    Teacher            ..|> BookBorrowerCapable
+    EmployeeResearcher ..|> ResearcherCapable
+
+    %% ==== composition: profile lives inside the user ====
+    Student            *-- "0..1" ResearcherProfile
+    Teacher            *-- "0..1" ResearcherProfile
+    EmployeeResearcher *-- "0..1" ResearcherProfile
+
+    %% ==== value object usage ====
+    User --> Username
+    User --> PersonName
+    User --> Email
+
+    %% ==== styles ====
+    class User:::pkgUser
+    class Employee:::pkgUser
+    class Student:::pkgUser
+    class GraduateStudent:::pkgUser
+    class Teacher:::pkgUser
+    class Dean:::pkgUser
+    class Manager:::pkgUser
+    class EmployeeResearcher:::pkgUser
+    class Librarian:::pkgUser
+    class TechSupport:::pkgUser
+    class Admin:::pkgUser
+    class ResearcherProfile:::pkgUser
+
+    class ResearcherCapable:::pkgIface
+    class BookBorrowerCapable:::pkgIface
+
+    class Username:::pkgShared
+    class PersonName:::pkgShared
+    class Email:::pkgShared
+    class Money:::pkgShared
+    class Credits:::pkgShared
+    class IdSequence:::pkgShared
+```
+
+## 2. Domain — Course, Research, Library, Messaging, Organization
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgCourse fill:#EAFAF1,stroke:#27AE60,stroke-width:1.5px,color:#000
+    classDef pkgRes    fill:#FEF9E7,stroke:#B7950B,stroke-width:1.5px,color:#000
+    classDef pkgLib    fill:#E8F8F5,stroke:#1ABC9C,stroke-width:1.5px,color:#000
+    classDef pkgMsg    fill:#FDEDEC,stroke:#943126,stroke-width:1.5px,color:#000
+    classDef pkgOrg    fill:#FAE5D3,stroke:#A04000,stroke-width:1.5px,color:#000
+    classDef pkgLog    fill:#E5E8E8,stroke:#566573,stroke-width:1.5px,color:#000
+
+    %% ==== course aggregate ====
+    class Course {
+        -id: CourseId
+        -name: String
+        -credits: Credits
+        -type: DisciplineType
+        -capacity: Capacity
+        -teacherUsernames: Set~Username~
+        -studentUsernames: Set~Username~
+        -lessons: List~Lesson~
+        -prerequisites: Set~CourseId~
+        -grades: Map~Username,Grade~
+        +enroll(user)
+        +unenroll(user)
+        +addLesson(l)
+        +addPrerequisite(c)
+        +recordGrade(student, g)
+        +isFull() boolean
+    }
+
+    class CourseId {
+        -value: String
+    }
+
+    class Capacity {
+        +max: int
+        +canFit(currentEnrolled) boolean
+        +remaining(currentEnrolled) int
+    }
+
+    class Lesson {
+        +type: LessonType
+        +slot: TimeSlot
+        +room: Room
+        +isExam() boolean
+    }
+
+    class TimeSlot {
+        +day: WeekDay
+        +time: String
+        +overlaps(other) boolean
+    }
+
+    class Room {
+        +name: String
+        +sameAs(other) boolean
+    }
+
+    class Grade {
+        +firstHalf: int
+        +secondHalf: int
+        +exam: int
+        +total() int
+        +letter() String
+        +isPassing() boolean
+    }
+
+    %% ==== research aggregates ====
+    class ResearchPaper {
+        -id: PaperId
+        -title: String
+        -author: Username
+        -journal: JournalName
+        -citations: int
+        -pages: int
+        +cite()
+        +length() int
+    }
+
+    class ResearchProject {
+        -id: int
+        -journal: JournalName
+        -topic: String
+        -supervisor: Username
+        -participants: Set~Username~
+        -publishedPapers: List~PaperId~
+        +addParticipant(u)
+        +recordPublication(id)
+    }
+
+    class JournalName {
+        +value: String
+    }
+
+    class PaperId {
+        +value: int
+    }
+
+    class HIndex {
+        +value: int
+        +atLeast(other) boolean
+    }
+
+    %% ==== library ====
+    class Book {
+        -id: BookId
+        -title: String
+        -author: String
+        -borrowedBy: Username
+        +lendTo(user)
+        +returnFrom(user)
+        +isBorrowed() boolean
+    }
+    class BookId {
+        +value: int
+    }
+
+    %% ==== messaging ====
+    class Message {
+        -id: int
+        -sender: Username
+        -recipient: Username
+        -subject: String
+        -body: String
+        -urgency: UrgencyLevel
+        -status: MessageStatus
+        +markRead()
+    }
+
+    class News {
+        -id: int
+        -title: String
+        -body: String
+        -author: Username
+        -comments: List~String~
+        +addComment(c)
+        +edit(t, b)
+    }
+
+    class Request {
+        -id: int
+        -requester: Username
+        -type: HelpType
+        -faculty: Faculty
+        -urgency: UrgencyLevel
+        -status: RequestStatus
+        +changeStatus(s)
+    }
+
+    class Order {
+        -id: int
+        -requester: Username
+        -description: String
+        -status: OrderStatus
+        -executor: Username
+        +accept(executor)
+        +reject()
+        +complete()
+    }
+
+    class Notification {
+        +recipient: Username
+        +text: String
+        +at: LocalDateTime
+    }
+
+    %% ==== organization ====
+    class Organization {
+        -name: String
+        -head: Username
+        -members: Set~Username~
+        +addMember(u)
+        +isMember(u) boolean
+    }
+
+    %% ==== logging ====
+    class LogEntry {
+        +at: LocalDateTime
+        +actor: Username
+        +action: String
+    }
+
+    %% ==== course composition ====
+    Course "1" *-- "*" Lesson : has
+    Course --> CourseId
+    Course --> Capacity
+    Course "*" o-- "*" CourseId : prerequisites
+    Course "1" *-- "*" Grade : grades
+    Lesson --> TimeSlot
+    Lesson --> Room
+
+    %% ==== research linkage ====
+    ResearchProject "1" o-- "*" PaperId : publishedPapers
+    ResearchProject --> JournalName
+    ResearchPaper --> PaperId
+    ResearchPaper --> JournalName
+
+    %% ==== library ====
+    Book --> BookId
+
+    %% ==== styling ====
+    class Course:::pkgCourse
+    class CourseId:::pkgCourse
+    class Capacity:::pkgCourse
+    class Lesson:::pkgCourse
+    class TimeSlot:::pkgCourse
+    class Room:::pkgCourse
+    class Grade:::pkgCourse
+    class ResearchPaper:::pkgRes
+    class ResearchProject:::pkgRes
+    class JournalName:::pkgRes
+    class PaperId:::pkgRes
+    class HIndex:::pkgRes
+    class Book:::pkgLib
+    class BookId:::pkgLib
+    class Message:::pkgMsg
+    class News:::pkgMsg
+    class Request:::pkgMsg
+    class Order:::pkgMsg
+    class Notification:::pkgMsg
+    class Organization:::pkgOrg
+    class LogEntry:::pkgLog
+```
+
+## 3. Domain — Rules, Services, Repository Interfaces
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgRule fill:#FCF3CF,stroke:#7D6608,stroke-width:1.5px,color:#000
+    classDef pkgSvc  fill:#D5F5E3,stroke:#1E8449,stroke-width:1.5px,color:#000
+    classDef pkgRepo fill:#D6EAF8,stroke:#1F618D,stroke-width:1.5px,color:#000
+
+    %% ==== enrollment rule chain ====
+    class EnrollmentRule {
+        <<interface>>
+        +check(student, course) EnrollmentDecision
+    }
+    class EnrollmentDecision {
+        +allowed: boolean
+        +reason: String
+        +allow()$ EnrollmentDecision
+        +deny(reason)$ EnrollmentDecision
+    }
+    class MaxFailLimitRule
+    class AlreadyEnrolledRule
+    class CreditLimitRule
+    class PrerequisiteRule {
+        -courses: CourseRepository
+    }
+    class CapacityRule
+    class ScheduleConflictRule {
+        -courses: CourseRepository
+    }
+    EnrollmentRule <|.. MaxFailLimitRule
+    EnrollmentRule <|.. AlreadyEnrolledRule
+    EnrollmentRule <|.. CreditLimitRule
+    EnrollmentRule <|.. PrerequisiteRule
+    EnrollmentRule <|.. CapacityRule
+    EnrollmentRule <|.. ScheduleConflictRule
+
+    %% ==== domain services ====
+    class EnrollmentService {
+        -rules: List~EnrollmentRule~
+        +tryEnroll(student, course) EnrollmentDecision
+    }
+    EnrollmentService o-- "*" EnrollmentRule : runs in order
+
+    class RoomScheduler {
+        -courses: CourseRepository
+        +isAvailable(room, slot) boolean
+    }
+    class GpaCalculator {
+        -courses: CourseRepository
+        +of(student) double
+    }
+    class HIndexCalculator {
+        +calculate(papers) HIndex
+    }
+    class CitationFormatter {
+        +format(paper, format) String
+    }
+    class PaperPublisher {
+        -papers: ResearchPaperRepository
+        -projects: ResearchProjectRepository
+        -notifications: NotificationRepository
+        -news: NewsRepository
+        -users: UserRepository
+        +publish(paper)
+    }
+    class SubscriptionService {
+        -projects: ResearchProjectRepository
+        +subscribe(rc, journal) boolean
+        +unsubscribe(rc, journal)
+    }
+
+    %% ==== repository interfaces ====
+    class UserRepository {
+        <<interface>>
+        +save(u)
+        +findByUsername(name) Optional
+        +findAll() Collection
+        +delete(name)
+    }
+    class CourseRepository {
+        <<interface>>
+        +save(c)
+        +findById(id) Optional
+        +findAll() Collection
+    }
+    class BookRepository {
+        <<interface>>
+        +save(b)
+        +findById(id) Optional
+        +findFirstAvailableByTitle(t) Optional
+    }
+    class MessageRepository {
+        <<interface>>
+        +save(m)
+        +inboxOf(recipient) List
+    }
+    class NewsRepository {
+        <<interface>>
+        +save(n)
+        +findById(id) Optional
+        +findAllSorted() List
+    }
+    class RequestRepository {
+        <<interface>>
+        +save(r)
+        +findById(id) Optional
+        +findByRequester(u) List
+    }
+    class OrderRepository {
+        <<interface>>
+        +save(o)
+        +findAll() List
+    }
+    class ResearchPaperRepository {
+        <<interface>>
+        +save(p)
+        +findByAuthor(u) List
+    }
+    class ResearchProjectRepository {
+        <<interface>>
+        +save(p)
+        +findByJournal(j) Optional
+    }
+    class OrganizationRepository {
+        <<interface>>
+        +save(o)
+        +findByName(n) Optional
+    }
+    class NotificationRepository {
+        <<interface>>
+        +save(n)
+        +findFor(u) List
+        +clearFor(u)
+    }
+    class LogRepository {
+        <<interface>>
+        +append(e)
+        +findAll() List
+    }
+
+    %% ==== services depend on repository interfaces ====
+    PrerequisiteRule       --> CourseRepository : reads
+    ScheduleConflictRule   --> CourseRepository : reads
+    RoomScheduler          --> CourseRepository : reads
+    GpaCalculator          --> CourseRepository : reads
+    PaperPublisher         --> ResearchPaperRepository
+    PaperPublisher         --> ResearchProjectRepository
+    PaperPublisher         --> NotificationRepository
+    PaperPublisher         --> NewsRepository
+    PaperPublisher         --> UserRepository
+    SubscriptionService    --> ResearchProjectRepository
+
+    %% ==== styles ====
+    class EnrollmentRule:::pkgRule
+    class EnrollmentDecision:::pkgRule
+    class MaxFailLimitRule:::pkgRule
+    class AlreadyEnrolledRule:::pkgRule
+    class CreditLimitRule:::pkgRule
+    class PrerequisiteRule:::pkgRule
+    class CapacityRule:::pkgRule
+    class ScheduleConflictRule:::pkgRule
+
+    class EnrollmentService:::pkgSvc
+    class RoomScheduler:::pkgSvc
+    class GpaCalculator:::pkgSvc
+    class HIndexCalculator:::pkgSvc
+    class CitationFormatter:::pkgSvc
+    class PaperPublisher:::pkgSvc
+    class SubscriptionService:::pkgSvc
+
+    class UserRepository:::pkgRepo
+    class CourseRepository:::pkgRepo
+    class BookRepository:::pkgRepo
+    class MessageRepository:::pkgRepo
+    class NewsRepository:::pkgRepo
+    class RequestRepository:::pkgRepo
+    class OrderRepository:::pkgRepo
+    class ResearchPaperRepository:::pkgRepo
+    class ResearchProjectRepository:::pkgRepo
+    class OrganizationRepository:::pkgRepo
+    class NotificationRepository:::pkgRepo
+    class LogRepository:::pkgRepo
+```
+
+## 4. Infrastructure — Persistence (Database, ORM, Mappers, ORM Repos)
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgJson fill:#F5EEF8,stroke:#6C3483,stroke-width:1.5px,color:#000
+    classDef pkgDb   fill:#FCF3CF,stroke:#7D6608,stroke-width:1.5px,color:#000
+    classDef pkgOrm  fill:#FDEBD0,stroke:#B9770E,stroke-width:1.5px,color:#000
+    classDef pkgMap  fill:#FADBD8,stroke:#922B21,stroke-width:1.5px,color:#000
+    classDef pkgRepo fill:#D6EAF8,stroke:#1F618D,stroke-width:1.5px,color:#000
+
+    %% ==== JSON layer (lowest) ====
+    class JsonValue {
+        <<sealed>>
+        +asString() String
+        +asInt() int
+        +asArray() List
+        +asObject() Map
+        +isNull() boolean
+    }
+    class JsonString
+    class JsonNumber
+    class JsonBool
+    class JsonNull
+    class JsonArray
+    class JsonObject
+
+    JsonValue <|-- JsonString
+    JsonValue <|-- JsonNumber
+    JsonValue <|-- JsonBool
+    JsonValue <|-- JsonNull
+    JsonValue <|-- JsonArray
+    JsonValue <|-- JsonObject
+
+    class JsonReader {
+        +parse(text)$ JsonValue
+    }
+    class JsonWriter {
+        +write(v)$ String
+    }
+    class JsonObjectBuilder {
+        +put(k, v) JsonObjectBuilder
+        +build() JsonObject
+    }
+
+    JsonReader ..> JsonValue : produces
+    JsonWriter ..> JsonValue : consumes
+
+    %% ==== Database layer ====
+    class Database {
+        <<interface>>
+        +readTable(name) List~JsonValue~
+        +writeTable(name, rows)
+    }
+    class JsonFileDatabase {
+        -root: Path
+        +readTable(name)
+        +writeTable(name, rows)
+    }
+    Database <|.. JsonFileDatabase
+    JsonFileDatabase ..> JsonReader
+    JsonFileDatabase ..> JsonWriter
+
+    %% ==== ORM layer ====
+    class EntityMapper~T,ID~ {
+        <<interface>>
+        +toJson(entity) JsonValue
+        +fromJson(json) T
+        +idOf(entity) ID
+        +idAsString(id) String
+    }
+
+    class Repository~T,ID~ {
+        -db: Database
+        -tableName: String
+        -mapper: EntityMapper
+        +save(e) T
+        +create(e) T
+        +update(e) T
+        +find(id) Optional
+        +findById(id) Optional
+        +findAll() List
+        +delete(e) boolean
+        +deleteAll() int
+        +count() int
+        +select() QueryBuilder
+        +where(field, op, v) QueryBuilder
+        +whereEq(field, v) QueryBuilder
+    }
+
+    class QueryBuilder~T,ID~ {
+        -conditions: List~Condition~
+        -typedPredicate: Predicate~T~
+        -ordering: Comparator~T~
+        -limit: int
+        -offset: int
+        +where(field, op, v) QueryBuilder
+        +whereEq(field, v) QueryBuilder
+        +whereContains(field, v) QueryBuilder
+        +whereMatch(predicate) QueryBuilder
+        +orderBy(c) QueryBuilder
+        +limit(n) QueryBuilder
+        +offset(n) QueryBuilder
+        +list() List
+        +first() Optional
+        +count() int
+        +deleteAll() int
+        +updateEach(consumer) int
+    }
+
+    class Condition {
+        +field: String
+        +op: Op
+        +value: Object
+        +matches(row) boolean
+    }
+
+    class Op {
+        <<enumeration>>
+        EQ
+        NEQ
+        GT
+        LT
+        GTE
+        LTE
+        CONTAINS
+        STARTS_WITH
+        ENDS_WITH
+        IN
+    }
+
+    Repository --> Database : reads/writes
+    Repository --> EntityMapper : delegates serialization
+    Repository ..> QueryBuilder : creates
+    QueryBuilder --> Database : reads
+    QueryBuilder --> EntityMapper : materializes
+    QueryBuilder o-- "*" Condition
+    Condition --> Op
+
+    %% ==== Mappers (entity ↔ JSON) ====
+    class UserMapper
+    class CourseMapper
+    class BookMapper
+    class MessageMapper
+    class NewsMapper
+    class RequestMapper
+    class OrderMapper
+    class ResearchPaperMapper
+    class ResearchProjectMapper
+    class OrganizationMapper
+    class NotificationMapper
+    class LogEntryMapper
+
+    EntityMapper <|.. UserMapper
+    EntityMapper <|.. CourseMapper
+    EntityMapper <|.. BookMapper
+    EntityMapper <|.. MessageMapper
+    EntityMapper <|.. NewsMapper
+    EntityMapper <|.. RequestMapper
+    EntityMapper <|.. OrderMapper
+    EntityMapper <|.. ResearchPaperMapper
+    EntityMapper <|.. ResearchProjectMapper
+    EntityMapper <|.. OrganizationMapper
+    EntityMapper <|.. NotificationMapper
+    EntityMapper <|.. LogEntryMapper
+
+    %% ==== ORM-backed repositories implement domain interfaces ====
+    class OrmUserRepository
+    class OrmCourseRepository
+    class OrmBookRepository
+    class OrmMessageRepository
+    class OrmNewsRepository
+    class OrmRequestRepository
+    class OrmOrderRepository
+    class OrmResearchPaperRepository
+    class OrmResearchProjectRepository
+    class OrmOrganizationRepository
+    class OrmNotificationRepository
+    class OrmLogRepository
+
+    OrmUserRepository --> Repository : delegates
+    OrmCourseRepository --> Repository
+    OrmBookRepository --> Repository
+    OrmMessageRepository --> Repository
+    OrmNewsRepository --> Repository
+    OrmRequestRepository --> Repository
+    OrmOrderRepository --> Repository
+    OrmResearchPaperRepository --> Repository
+    OrmResearchProjectRepository --> Repository
+    OrmOrganizationRepository --> Repository
+    OrmNotificationRepository --> Repository
+    OrmLogRepository --> Repository
+
+    OrmUserRepository ..|> UserRepository
+    OrmCourseRepository ..|> CourseRepository
+    OrmBookRepository ..|> BookRepository
+    OrmMessageRepository ..|> MessageRepository
+    OrmNewsRepository ..|> NewsRepository
+    OrmRequestRepository ..|> RequestRepository
+    OrmOrderRepository ..|> OrderRepository
+    OrmResearchPaperRepository ..|> ResearchPaperRepository
+    OrmResearchProjectRepository ..|> ResearchProjectRepository
+    OrmOrganizationRepository ..|> OrganizationRepository
+    OrmNotificationRepository ..|> NotificationRepository
+    OrmLogRepository ..|> LogRepository
+
+    %% ==== domain repository interfaces (re-stated as targets) ====
+    class UserRepository {
+        <<interface>>
+    }
+    class CourseRepository {
+        <<interface>>
+    }
+    class BookRepository {
+        <<interface>>
+    }
+    class MessageRepository {
+        <<interface>>
+    }
+    class NewsRepository {
+        <<interface>>
+    }
+    class RequestRepository {
+        <<interface>>
+    }
+    class OrderRepository {
+        <<interface>>
+    }
+    class ResearchPaperRepository {
+        <<interface>>
+    }
+    class ResearchProjectRepository {
+        <<interface>>
+    }
+    class OrganizationRepository {
+        <<interface>>
+    }
+    class NotificationRepository {
+        <<interface>>
+    }
+    class LogRepository {
+        <<interface>>
+    }
+
+    %% ==== styles ====
+    class JsonValue:::pkgJson
+    class JsonString:::pkgJson
+    class JsonNumber:::pkgJson
+    class JsonBool:::pkgJson
+    class JsonNull:::pkgJson
+    class JsonArray:::pkgJson
+    class JsonObject:::pkgJson
+    class JsonReader:::pkgJson
+    class JsonWriter:::pkgJson
+    class JsonObjectBuilder:::pkgJson
+
+    class Database:::pkgDb
+    class JsonFileDatabase:::pkgDb
+
+    class EntityMapper:::pkgOrm
+    class Repository:::pkgOrm
+    class QueryBuilder:::pkgOrm
+    class Condition:::pkgOrm
+    class Op:::pkgOrm
+
+    class UserMapper:::pkgMap
+    class CourseMapper:::pkgMap
+    class BookMapper:::pkgMap
+    class MessageMapper:::pkgMap
+    class NewsMapper:::pkgMap
+    class RequestMapper:::pkgMap
+    class OrderMapper:::pkgMap
+    class ResearchPaperMapper:::pkgMap
+    class ResearchProjectMapper:::pkgMap
+    class OrganizationMapper:::pkgMap
+    class NotificationMapper:::pkgMap
+    class LogEntryMapper:::pkgMap
+
+    class OrmUserRepository:::pkgRepo
+    class OrmCourseRepository:::pkgRepo
+    class OrmBookRepository:::pkgRepo
+    class OrmMessageRepository:::pkgRepo
+    class OrmNewsRepository:::pkgRepo
+    class OrmRequestRepository:::pkgRepo
+    class OrmOrderRepository:::pkgRepo
+    class OrmResearchPaperRepository:::pkgRepo
+    class OrmResearchProjectRepository:::pkgRepo
+    class OrmOrganizationRepository:::pkgRepo
+    class OrmNotificationRepository:::pkgRepo
+    class OrmLogRepository:::pkgRepo
+
+    class UserRepository:::pkgRepo
+    class CourseRepository:::pkgRepo
+    class BookRepository:::pkgRepo
+    class MessageRepository:::pkgRepo
+    class NewsRepository:::pkgRepo
+    class RequestRepository:::pkgRepo
+    class OrderRepository:::pkgRepo
+    class ResearchPaperRepository:::pkgRepo
+    class ResearchProjectRepository:::pkgRepo
+    class OrganizationRepository:::pkgRepo
+    class NotificationRepository:::pkgRepo
+    class LogRepository:::pkgRepo
+```
+
+## 5. Application Layer — Use Cases
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgUC fill:#EAEDED,stroke:#34495E,stroke-width:1.5px,color:#000
+    classDef pkgRes fill:#D5F5E3,stroke:#1E8449,stroke-width:1.5px,color:#000
+
+    class Result {
+        +success: boolean
+        +message: String
+        +ok()$ Result
+        +ok(msg)$ Result
+        +fail(msg)$ Result
+    }
+
+    %% user / role
+    class BecomeResearcher
+    class RateTeacher
+    class ComplainAboutStudent
+
+    %% course / academic
+    class EnrollInCourse {
+        -enrollment: EnrollmentService
+        +execute(student, courseId) Result
+    }
+    class DropCourse
+    class RecordMarks
+    class ViewTranscript {
+        +execute(student) Transcript
+    }
+    class CreateCourse
+    class AssignTeacher
+    class AddLesson
+    class SetCoursePrerequisite
+    class SetCourseCapacity
+
+    %% library
+    class BorrowBook
+    class ReturnBook
+    class AddBook
+    class RemoveBook
+
+    %% messaging
+    class SendMessage
+    class SubmitRequest
+    class ProcessRequest
+    class CreateITOrder
+    class AcceptOrder
+    class CompleteOrder
+    class PublishNews
+    class CommentOnNews
+
+    %% organization
+    class CreateOrganization
+    class JoinOrganization
+
+    %% research
+    class PublishPaper
+    class CreateResearchProject
+    class JoinResearchProject
+    class SetSupervisor {
+        -hIndex: HIndexCalculator
+        +execute(grad, candidate) Result
+    }
+    class SubscribeToJournal
+    class UnsubscribeFromJournal
+    class GenerateCitation
+
+    %% admin
+    class CreateStudent
+    class CreateGradStudent
+    class CreateTeacher
+    class CreateDean
+    class CreateManager
+    class CreateLibrarian
+    class CreateTechSupport
+    class CreateEmpResearcher
+    class DeleteUser
+    class GenerateAcademicReport
+    class GenerateTopResearcherNews
+
+    %% all use cases return Result (or a record)
+    BecomeResearcher           ..> Result
+    RateTeacher                ..> Result
+    ComplainAboutStudent       ..> Result
+    EnrollInCourse             ..> Result
+    DropCourse                 ..> Result
+    RecordMarks                ..> Result
+    CreateCourse               ..> Result
+    AssignTeacher              ..> Result
+    AddLesson                  ..> Result
+    SetCoursePrerequisite      ..> Result
+    SetCourseCapacity          ..> Result
+    BorrowBook                 ..> Result
+    ReturnBook                 ..> Result
+    AddBook                    ..> Result
+    RemoveBook                 ..> Result
+    SendMessage                ..> Result
+    SubmitRequest              ..> Result
+    ProcessRequest             ..> Result
+    CreateITOrder              ..> Result
+    AcceptOrder                ..> Result
+    CompleteOrder              ..> Result
+    PublishNews                ..> Result
+    CommentOnNews              ..> Result
+    CreateOrganization         ..> Result
+    JoinOrganization           ..> Result
+    PublishPaper               ..> Result
+    CreateResearchProject      ..> Result
+    JoinResearchProject        ..> Result
+    SetSupervisor              ..> Result
+    SubscribeToJournal         ..> Result
+    UnsubscribeFromJournal     ..> Result
+    GenerateCitation           ..> Result
+    DeleteUser                 ..> Result
+
+    class Result:::pkgRes
+    class BecomeResearcher:::pkgUC
+    class RateTeacher:::pkgUC
+    class ComplainAboutStudent:::pkgUC
+    class EnrollInCourse:::pkgUC
+    class DropCourse:::pkgUC
+    class RecordMarks:::pkgUC
+    class ViewTranscript:::pkgUC
+    class CreateCourse:::pkgUC
+    class AssignTeacher:::pkgUC
+    class AddLesson:::pkgUC
+    class SetCoursePrerequisite:::pkgUC
+    class SetCourseCapacity:::pkgUC
+    class BorrowBook:::pkgUC
+    class ReturnBook:::pkgUC
+    class AddBook:::pkgUC
+    class RemoveBook:::pkgUC
+    class SendMessage:::pkgUC
+    class SubmitRequest:::pkgUC
+    class ProcessRequest:::pkgUC
+    class CreateITOrder:::pkgUC
+    class AcceptOrder:::pkgUC
+    class CompleteOrder:::pkgUC
+    class PublishNews:::pkgUC
+    class CommentOnNews:::pkgUC
+    class CreateOrganization:::pkgUC
+    class JoinOrganization:::pkgUC
+    class PublishPaper:::pkgUC
+    class CreateResearchProject:::pkgUC
+    class JoinResearchProject:::pkgUC
+    class SetSupervisor:::pkgUC
+    class SubscribeToJournal:::pkgUC
+    class UnsubscribeFromJournal:::pkgUC
+    class GenerateCitation:::pkgUC
+    class CreateStudent:::pkgUC
+    class CreateGradStudent:::pkgUC
+    class CreateTeacher:::pkgUC
+    class CreateDean:::pkgUC
+    class CreateManager:::pkgUC
+    class CreateLibrarian:::pkgUC
+    class CreateTechSupport:::pkgUC
+    class CreateEmpResearcher:::pkgUC
+    class DeleteUser:::pkgUC
+    class GenerateAcademicReport:::pkgUC
+    class GenerateTopResearcherNews:::pkgUC
+```
+
+## 6. Presentation (CLI Menus) + Bootstrap
+
+```mermaid
+classDiagram
+    direction LR
+
+    classDef pkgCli   fill:#FDEBD0,stroke:#D35400,stroke-width:1.5px,color:#000
+    classDef pkgMenu  fill:#FAE5D3,stroke:#A04000,stroke-width:1.5px,color:#000
+    classDef pkgBoot  fill:#FCF3CF,stroke:#7D6608,stroke-width:2px,color:#000
+    classDef pkgInfra fill:#D6EAF8,stroke:#1F618D,stroke-width:1.5px,color:#000
+
+    %% ==== console abstraction ====
+    class Console {
+        <<interface>>
+        +readLine(prompt) String
+        +readInt(prompt) int
+        +println(text)
+    }
+    class StdConsole
+    Console <|.. StdConsole
+
+    %% ==== infrastructure shared ====
+    class Translator {
+        <<interface>>
+        +get(key) String
+        +fmt(key, args) String
+        +switchTo(lang)
+    }
+    class PropertiesTranslator
+    Translator <|.. PropertiesTranslator
+
+    class Logger {
+        <<interface>>
+        +log(actor, action)
+    }
+    class RepositoryLogger
+    Logger <|.. RepositoryLogger
+
+    class PasswordHasher {
+        <<interface>>
+        +hash(plain) String
+        +matches(plain, hash) boolean
+    }
+    class PlainPasswordHasher
+    PasswordHasher <|.. PlainPasswordHasher
+
+    class AuthenticationService {
+        -users: UserRepository
+        -hasher: PasswordHasher
+        +authenticate(name, pass) Optional~User~
+    }
+
+    %% ==== menu framework ====
+    class MenuItem {
+        +label: String
+        +action: Runnable
+    }
+    class Menu {
+        <<abstract>>
+        #console: Console
+        #title()*  String
+        #items()*  List~MenuItem~
+        +run()
+    }
+    Menu o-- "*" MenuItem
+
+    class MenuFactory {
+        <<interface>>
+        +menuFor(user) Menu
+    }
+    class DefaultMenuFactory {
+        -ctx: AppContext
+        +menuFor(user) Menu
+    }
+    MenuFactory <|.. DefaultMenuFactory
+
+    %% ==== role-specific menus ====
+    class StudentMenu
+    class GraduateStudentMenu
+    class TeacherMenu
+    class DeanMenu
+    class ManagerMenu
+    class AdminMenu
+    class LibrarianMenu
+    class TechSupportMenu
+    class EmployeeResearcherMenu
+    Menu <|-- StudentMenu
+    Menu <|-- GraduateStudentMenu
+    Menu <|-- TeacherMenu
+    Menu <|-- DeanMenu
+    Menu <|-- ManagerMenu
+    Menu <|-- AdminMenu
+    Menu <|-- LibrarianMenu
+    Menu <|-- TechSupportMenu
+    Menu <|-- EmployeeResearcherMenu
+
+    %% ==== Become-Researcher gating ====
+    class BecomeResearcherAction {
+        -useCase: BecomeResearcher
+        +run(user)
+    }
+    class ResearcherMenuExtension {
+        +itemsFor(user) List~MenuItem~
+    }
+    StudentMenu --> BecomeResearcherAction
+    StudentMenu --> ResearcherMenuExtension
+    TeacherMenu --> BecomeResearcherAction
+    TeacherMenu --> ResearcherMenuExtension
+    GraduateStudentMenu --> BecomeResearcherAction
+    GraduateStudentMenu --> ResearcherMenuExtension
+    EmployeeResearcherMenu --> BecomeResearcherAction
+    EmployeeResearcherMenu --> ResearcherMenuExtension
+    DeanMenu --> BecomeResearcherAction
+    DeanMenu --> ResearcherMenuExtension
+
+    class LoginScreen {
+        -auth: AuthenticationService
+        +run() Optional~User~
+    }
+
+    %% ==== bootstrap / DI ====
+    class AppContext {
+        +database: Database
+        +userRepository: UserRepository
+        +courseRepository: CourseRepository
+        +...all other repositories
+        +enrollmentService: EnrollmentService
+        +...all other domain services
+        +enrollInCourse: EnrollInCourse
+        +...all other use cases
+        +menuFactory: MenuFactory
+        +loginScreen: LoginScreen
+        +withJsonStorage(path)$ AppContext
+    }
+    class DataSeeder {
+        -ctx: AppContext
+        +seedIfEmpty()
+    }
+    class IdSequenceWarmup {
+        +warm(ctx)$
+    }
+    class Main {
+        +main(args)$
+    }
+
+    AppContext o-- "many" UserRepository
+    AppContext o-- "many" CourseRepository
+    AppContext --> AuthenticationService
+    AppContext --> Translator
+    AppContext --> Logger
+    AppContext --> Console
+    AppContext --> MenuFactory
+    AppContext --> LoginScreen
+
+    DataSeeder --> AppContext
+    IdSequenceWarmup --> AppContext
+    Main --> AppContext : creates
+    Main --> DataSeeder : seeds
+    Main --> IdSequenceWarmup : warms
+    Main --> LoginScreen : runs
+    Main --> MenuFactory : routes by role
+
+    %% ==== styles ====
+    class Console:::pkgCli
+    class StdConsole:::pkgCli
+    class LoginScreen:::pkgCli
+
+    class Menu:::pkgMenu
+    class MenuItem:::pkgMenu
+    class MenuFactory:::pkgMenu
+    class DefaultMenuFactory:::pkgBoot
+    class StudentMenu:::pkgMenu
+    class GraduateStudentMenu:::pkgMenu
+    class TeacherMenu:::pkgMenu
+    class DeanMenu:::pkgMenu
+    class ManagerMenu:::pkgMenu
+    class AdminMenu:::pkgMenu
+    class LibrarianMenu:::pkgMenu
+    class TechSupportMenu:::pkgMenu
+    class EmployeeResearcherMenu:::pkgMenu
+    class BecomeResearcherAction:::pkgMenu
+    class ResearcherMenuExtension:::pkgMenu
+
+    class Translator:::pkgInfra
+    class PropertiesTranslator:::pkgInfra
+    class Logger:::pkgInfra
+    class RepositoryLogger:::pkgInfra
+    class PasswordHasher:::pkgInfra
+    class PlainPasswordHasher:::pkgInfra
+    class AuthenticationService:::pkgInfra
+
+    class AppContext:::pkgBoot
+    class DataSeeder:::pkgBoot
+    class IdSequenceWarmup:::pkgBoot
+    class Main:::pkgBoot
+```

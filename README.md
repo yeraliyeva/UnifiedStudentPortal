@@ -7,16 +7,28 @@ A console-based university management system built in **Java 17+** as an OOP fin
 ## Quick Start
 
 ```bash
-# Build
-chmod +x build.sh
-./build.sh
+# Build a self-contained JAR
+chmod +x scripts/build.sh
+bash scripts/build.sh
+```
 
-# Run
-java -cp out/main Main
+This produces `university-system.jar` in the project root.
 
-# Run the automated test suite (52 tests)
-chmod +x test.sh
-./test.sh
+```bash
+# Run — interactive CLI (default)
+java -jar university-system.jar
+
+# Run — REST API server (port 8080)
+java -jar university-system.jar --server
+
+# Run — REST API on a custom port
+java -jar university-system.jar --server 9000
+
+# Custom data directory (default: ./data)
+java -Duni.data=/path/to/data -jar university-system.jar
+
+# Run the test suite (52 tests)
+bash scripts/test.sh
 ```
 
 ### Demo Accounts

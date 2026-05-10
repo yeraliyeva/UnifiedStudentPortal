@@ -8,18 +8,7 @@ import presentation.rest.server.RestServer;
 import java.nio.file.Path;
 import java.util.Optional;
 
-/**
- * Application entry point.
- *
- * <p>Two launch modes:
- * <ul>
- *   <li>{@code java Main}                — starts the interactive CLI (default)</li>
- *   <li>{@code java Main --server [port]} — starts the REST API (default port: 8080)</li>
- * </ul>
- *
- * Both modes share the exact same {@link AppContext}: same repositories, same use cases,
- * same data directory — only the Presentation Layer differs.
- */
+/** Application entry point that supports both CLI and REST Server launch modes. */
 public final class Main {
     public static void main(String[] args) throws Exception {
         Path dataDir = Path.of(System.getProperty("uni.data", "data"));
@@ -35,13 +24,11 @@ public final class Main {
             System.out.println("Listening on http://localhost:" + port + "/api");
             System.out.println("Press Ctrl+C to stop.\n");
             Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
-            Thread.currentThread().join(); // keep main thread alive
+            Thread.currentThread().join();
         } else {
             runCli(ctx);
         }
     }
-
-    // ── CLI mode (unchanged) ──────────────────────────────────
 
     private static void runCli(AppContext ctx) {
         ctx.console.println("\n=== UNIVERSITY MANAGEMENT SYSTEM ===");

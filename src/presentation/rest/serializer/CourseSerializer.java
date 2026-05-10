@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Converts domain {@link Course} objects to JSON for API responses.
- */
+/** Converts domain Course objects to JSON for API responses. */
 public final class CourseSerializer {
 
     private CourseSerializer() {}

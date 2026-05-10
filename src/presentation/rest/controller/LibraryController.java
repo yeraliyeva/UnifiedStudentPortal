@@ -16,9 +16,7 @@ import java.util.List;
 
 import static presentation.rest.controller.ControllerUtils.*;
 
-/**
- * Handles library endpoints — borrow, return, manage books.
- */
+/** Handles book listing, addition, removal, borrowing, and returning. */
 public final class LibraryController {
     private final AppContext ctx;
 
@@ -68,7 +66,6 @@ public final class LibraryController {
         return resultToResponse(result);
     }
 
-    // ── Helpers ──────────────────────────────────────────────
 
     private static JsonValue bookToJson(Book b) {
         return JsonObjectBuilder.create()

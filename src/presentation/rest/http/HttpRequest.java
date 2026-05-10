@@ -10,10 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 
-/**
- * Immutable value object wrapping an inbound HTTP exchange.
- * Parsed once at the router entry point; controllers receive this clean object.
- */
+/** Immutable snapshot of an inbound HTTP request, parsed once at the router entry point. */
 public final class HttpRequest {
     private final String method;
     private final String path;
@@ -26,7 +23,6 @@ public final class HttpRequest {
         this.path     = path;
         this.rawBody  = rawBody;
         this.exchange = exchange;
-        // "/api/courses/CS101/enroll" -> ["", "api", "courses", "CS101", "enroll"]
         this.segments = path.split("/");
     }
 
@@ -46,12 +42,9 @@ public final class HttpRequest {
         }
     }
 
-    /**
-     * Returns a path segment by index (0-based, skipping the leading empty string).
-     * e.g. for "/api/courses/CS101", segment(0)="api", segment(1)="courses", segment(2)="CS101"
-     */
+    /** Returns the path segment at the given 0-based index, e.g. index 2 of "/api/courses/CS101" returns "CS101". */
     public Optional<String> pathSegment(int index) {
-        int adjusted = index + 1; // skip leading ""
+        int adjusted = index + 1;
         return (adjusted < segments.length) ? Optional.of(segments[adjusted]) : Optional.empty();
     }
 
@@ -64,6 +57,5 @@ public final class HttpRequest {
     public String path()   { return path;   }
     public String rawBody(){ return rawBody; }
 
-    /** Exposes the underlying exchange only to HttpResponse for writing back. */
     HttpExchange exchange() { return exchange; }
 }

@@ -4,12 +4,7 @@ import domain.user.*;
 import infrastructure.persistence.json.JsonObjectBuilder;
 import infrastructure.persistence.json.JsonValue;
 
-/**
- * Converts domain {@link User} subtypes to JSON for API responses.
- *
- * <p>Adapter pattern: keeps serialisation logic out of domain objects (SRP).
- * Uses Java 17 pattern matching switch for clean, exhaustive dispatch (OCP-friendly).
- */
+/** Converts domain User subtypes to JSON for API responses. */
 public final class UserSerializer {
 
     private UserSerializer() {}
@@ -25,7 +20,6 @@ public final class UserSerializer {
                 .put("language",   user.language().name())
                 .put("role",       user.getClass().getSimpleName());
 
-        // Subtype-specific extras
         if (user instanceof Student s) {
             builder.put("degreeType", s.degreeType().name())
                    .put("studyYear",  s.studyYear())

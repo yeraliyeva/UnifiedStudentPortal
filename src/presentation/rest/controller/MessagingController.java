@@ -22,9 +22,7 @@ import java.util.List;
 
 import static presentation.rest.controller.ControllerUtils.*;
 
-/**
- * Handles messaging, news, help requests, and IT order endpoints.
- */
+/** Handles messages, news, help requests, and IT order endpoints. */
 public final class MessagingController {
     private final AppContext ctx;
 
@@ -32,7 +30,6 @@ public final class MessagingController {
         this.ctx = ctx;
     }
 
-    // ── Messages ─────────────────────────────────────────────
 
     /** GET /api/messages/inbox */
     public HttpResponse inbox(HttpRequest request) {
@@ -62,8 +59,6 @@ public final class MessagingController {
         }
     }
 
-    // ── News ─────────────────────────────────────────────────
-
     /** GET /api/news */
     public HttpResponse listNews(HttpRequest request) {
         List<News> all = ctx.newsRepository.findAllSorted();
@@ -92,7 +87,6 @@ public final class MessagingController {
         return resultToResponse(result);
     }
 
-    // ── Help Requests ─────────────────────────────────────────
 
     /** GET /api/requests */
     public HttpResponse listRequests(HttpRequest request) {
@@ -117,7 +111,6 @@ public final class MessagingController {
         }
     }
 
-    // ── IT Orders ─────────────────────────────────────────────
 
     /** GET /api/orders */
     public HttpResponse listOrders(HttpRequest request) {
@@ -150,8 +143,6 @@ public final class MessagingController {
         Result result = ctx.completeOrder.execute(tech, id);
         return resultToResponse(result);
     }
-
-    // ── Serializers ───────────────────────────────────────────
 
     private static JsonValue messageToJson(Message m) {
         return JsonObjectBuilder.create()

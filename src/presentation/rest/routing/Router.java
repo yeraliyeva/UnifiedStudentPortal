@@ -11,17 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Central dispatcher — matches an inbound request to a registered {@link Route}
- * and invokes the guarded handler.
- *
- * <p>Design:
- * <ul>
- *   <li>OCP: Add endpoints by calling {@link #register(Route)}. The Router itself never changes.</li>
- *   <li>SRP: Routing only. Auth is delegated to {@link SecurityFilter}.</li>
- *   <li>Implements {@link HttpHandler} so it can be plugged directly into the Java HttpServer.</li>
- * </ul>
- */
+/** Matches inbound requests to registered routes and dispatches them through the security filter. */
 public final class Router implements HttpHandler {
     private final List<Route>   routes = new ArrayList<>();
     private final SecurityFilter security;
@@ -40,8 +30,6 @@ public final class Router implements HttpHandler {
         HttpResponse response = dispatch(request);
         response.send(exchange);
     }
-
-    // ── Private ──────────────────────────────────────────────
 
     private HttpResponse dispatch(HttpRequest request) {
         for (Route route : routes) {

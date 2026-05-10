@@ -9,10 +9,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Immutable value object representing an outbound HTTP response.
- * Use the static factory methods for construction; call send() once to write to the client.
- */
+/** Outbound HTTP response built via static factories and written to the client by calling send(). */
 public final class HttpResponse {
     private final HttpStatus status;
     private final JsonValue body;
@@ -21,8 +18,6 @@ public final class HttpResponse {
         this.status = status;
         this.body   = body;
     }
-
-    // ── Factories ────────────────────────────────────────────
 
     public static HttpResponse ok(JsonValue body) {
         return new HttpResponse(HttpStatus.OK, body);
@@ -59,12 +54,8 @@ public final class HttpResponse {
         return fail(HttpStatus.FORBIDDEN, "Insufficient permissions.");
     }
 
-    // ── Sending ──────────────────────────────────────────────
 
-    /**
-     * Serializes the response body to JSON and writes it to the HttpExchange.
-     * Called exactly once by the Router after the controller returns.
-     */
+    /** Writes the response status, JSON content-type header, and body to the exchange. */
     public void send(HttpExchange exchange) throws IOException {
         byte[] bytes = JsonWriter.write(body).getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");

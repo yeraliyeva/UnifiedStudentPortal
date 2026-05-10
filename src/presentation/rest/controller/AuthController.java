@@ -12,11 +12,7 @@ import presentation.rest.http.HttpStatus;
 
 import java.util.Optional;
 
-/**
- * Handles authentication endpoints: login and logout.
- *
- * <p>GRASP Controller: designated handler for the "Login" and "Logout" system operations.
- */
+/** Handles login and logout endpoints. */
 public final class AuthController {
     private final AppContext ctx;
     private final TokenStore tokens;
@@ -26,10 +22,7 @@ public final class AuthController {
         this.tokens = tokens;
     }
 
-    /**
-     * POST /api/login
-     * Body: { "username": "...", "password": "..." }
-     */
+    /** POST /api/login — authenticates the user and returns a session token. */
     public HttpResponse login(HttpRequest request) {
         JsonValue.JsonObject body = request.body();
         String username = getString(body, "username");
@@ -53,10 +46,7 @@ public final class AuthController {
         return HttpResponse.ok(responseBody);
     }
 
-    /**
-     * POST /api/logout
-     * Header: Authorization: Bearer {token}
-     */
+    /** POST /api/logout — invalidates the current session token. */
     public HttpResponse logout(HttpRequest request) {
         request.header("Authorization")
                 .filter(h -> h.startsWith("Bearer "))
@@ -65,7 +55,6 @@ public final class AuthController {
         return HttpResponse.ok(JsonObjectBuilder.create().put("message", "Logged out.").build());
     }
 
-    // ── Helpers ──────────────────────────────────────────────
 
     private static String getString(JsonValue.JsonObject body, String key) {
         JsonValue val = body.fields().get(key);

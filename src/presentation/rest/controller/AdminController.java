@@ -24,11 +24,7 @@ import java.util.List;
 
 import static presentation.rest.controller.ControllerUtils.*;
 
-/**
- * Handles admin-only user-management and reporting endpoints.
- *
- * <p>All routes require {@link Admin} role (enforced by {@code SecurityFilter}).
- */
+/** Handles user management and reporting endpoints; all routes require Admin role. */
 public final class AdminController {
     private final AppContext ctx;
 
@@ -36,7 +32,6 @@ public final class AdminController {
         this.ctx = ctx;
     }
 
-    /** GET /api/users — list all users */
     public HttpResponse listUsers(HttpRequest request) {
         Collection<User> all = ctx.userRepository.findAll();
         List<JsonValue> arr = new ArrayList<>();
@@ -44,7 +39,6 @@ public final class AdminController {
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
     }
 
-    /** GET /api/users/{username} — get a single user */
     public HttpResponse getUser(HttpRequest request) {
         String username = request.pathSegment(2).orElse("");
         return ctx.userRepository.findByUsername(new Username(username))
@@ -52,7 +46,6 @@ public final class AdminController {
                 .orElse(HttpResponse.notFound("User not found: " + username));
     }
 
-    /** POST /api/users/students — create a student */
     public HttpResponse createStudent(HttpRequest request) {
         Admin actor  = (Admin) RequestContext.current();
         JsonValue.JsonObject body = request.body();
@@ -82,7 +75,6 @@ public final class AdminController {
         }
     }
 
-    /** DELETE /api/users/{username} — delete a user */
     public HttpResponse deleteUser(HttpRequest request) {
         Admin  actor    = (Admin) RequestContext.current();
         String username = request.pathSegment(2).orElse("");
@@ -90,7 +82,6 @@ public final class AdminController {
         return resultToResponse(result);
     }
 
-    /** GET /api/logs — view the audit log */
     public HttpResponse viewLogs(HttpRequest request) {
         List<LogEntry> logs = ctx.logRepository.findAll();
         List<JsonValue> arr = new ArrayList<>();
@@ -104,7 +95,6 @@ public final class AdminController {
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
     }
 
-    /** GET /api/reports/academic — generate GPA report */
     public HttpResponse academicReport(HttpRequest request) {
         Admin actor  = (Admin) RequestContext.current();
         GenerateAcademicReport.Report report = ctx.generateAcademicReport.execute(actor.username());
@@ -135,7 +125,6 @@ public final class AdminController {
                 .build());
     }
 
-    // ── Helpers ──────────────────────────────────────────────
 
     private static HttpResponse resultToResponse(Result result) {
         if (result.success()) {

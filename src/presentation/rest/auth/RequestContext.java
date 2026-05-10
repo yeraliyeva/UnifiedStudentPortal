@@ -2,14 +2,7 @@ package presentation.rest.auth;
 
 import domain.user.User;
 
-/**
- * Thread-local holder for the authenticated user of the current request.
- *
- * <p>Set by {@link SecurityFilter} before the controller runs; cleared after.
- * Controllers call {@link #current()} to get the user without re-fetching from the DB.
- *
- * <p>GRASP: Information Expert — the thread context owns "who is executing this request".
- */
+/** Holds the authenticated user for the current request thread so controllers don't need to re-fetch it. */
 public final class RequestContext {
     private static final ThreadLocal<User> holder = new ThreadLocal<>();
 

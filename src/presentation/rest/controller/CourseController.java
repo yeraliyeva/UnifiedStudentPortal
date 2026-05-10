@@ -23,19 +23,7 @@ import java.util.List;
 
 import static presentation.rest.controller.ControllerUtils.*;
 
-/**
- * Handles course management endpoints.
- *
- * <p>Routes are role-specific:
- * <ul>
- *   <li>GET /api/courses — any authenticated user</li>
- *   <li>POST /api/courses — Manager only</li>
- *   <li>POST /api/courses/{id}/enroll — Student only</li>
- *   <li>POST /api/courses/{id}/drop — Student only</li>
- *   <li>POST /api/courses/{id}/marks — Teacher only</li>
- *   <li>GET  /api/courses/{id}/transcript — Student only</li>
- * </ul>
- */
+/** Handles course listing, creation, enrollment, marks recording, and transcript endpoints. */
 public final class CourseController {
     private final AppContext ctx;
 
@@ -141,7 +129,6 @@ public final class CourseController {
                 .build());
     }
 
-    // ── Helpers ──────────────────────────────────────────────
 
     private static HttpResponse resultToResponse(Result result) {
         if (result.success())

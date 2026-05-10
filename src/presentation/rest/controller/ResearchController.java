@@ -18,17 +18,13 @@ import java.util.List;
 
 import static presentation.rest.controller.ControllerUtils.*;
 
-/**
- * Handles research: papers, projects, subscriptions, citations.
- */
+/** Handles research paper publication, project management, subscriptions, and citation generation. */
 public final class ResearchController {
     private final AppContext ctx;
 
     public ResearchController(AppContext ctx) {
         this.ctx = ctx;
     }
-
-    // ── Research Papers ───────────────────────────────────────
 
     /** GET /api/papers */
     public HttpResponse listPapers(HttpRequest request) {
@@ -62,7 +58,6 @@ public final class ResearchController {
                 .orElse("PLAIN_TEXT");
         try {
             PaperFormat format = PaperFormat.valueOf(formatStr.toUpperCase());
-            // Reuse existing use case
             var paperId = new domain.research.PaperId(Integer.parseInt(idStr));
             Result result = ctx.generateCitation.execute(paperId, format);
             if (!result.success()) return HttpResponse.badRequest(result.message());
@@ -71,8 +66,6 @@ public final class ResearchController {
             return HttpResponse.badRequest("Invalid format. Use: PLAIN_TEXT, BIBTEX");
         }
     }
-
-    // ── Research Projects ─────────────────────────────────────
 
     /** GET /api/projects */
     public HttpResponse listProjects(HttpRequest request) {
@@ -101,8 +94,6 @@ public final class ResearchController {
         return resultToResponse(result);
     }
 
-    // ── Subscriptions ─────────────────────────────────────────
-
     /** POST /api/subscriptions */
     public HttpResponse subscribe(HttpRequest request) {
         User   user    = RequestContext.current();
@@ -118,8 +109,6 @@ public final class ResearchController {
         Result result  = ctx.unsubscribeFromJournal.execute(user, journal);
         return resultToResponse(result);
     }
-
-    // ── Serializers ───────────────────────────────────────────
 
     private static JsonValue paperToJson(ResearchPaper p) {
         return JsonObjectBuilder.create()

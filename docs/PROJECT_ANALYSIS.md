@@ -435,9 +435,35 @@ public static JsonValue toJson(User user) {
 
 ---
 
-## 8. Requirements Coverage
+## 8. Frontend Web Application
 
-### 8.1 Core Requirements ✅
+A complete modern Single Page Application (SPA) was built on top of the REST API, replacing the CLI for web users.
+
+### 8.1 Tech Stack
+- **Framework:** React 18 + Vite
+- **Routing:** React Router v6
+- **Styling:** Custom Vanilla CSS Design System (zero UI dependencies)
+- **State:** React Context API + LocalStorage
+- **Data Fetching:** Native `fetch` API
+
+### 8.2 Architecture & Security
+- **Stateless Auth:** On login, the backend returns a JWT/UUID token and the user's `role`. The frontend stores this in `localStorage`.
+- **API Client:** A centralized `api/client.js` automatically attaches the `Authorization: Bearer <token>` header to all outgoing requests.
+- **Role-Based UI:** The `Sidebar` dynamically renders navigation links based on the user's role. For example, only the `Admin` sees the "Users" and "Audit Logs" tabs.
+- **Route Guards:** The `ProtectedLayout` component wraps all application routes, immediately redirecting unauthenticated users to `/login`.
+
+### 8.3 Design System
+A premium, dark-mode aesthetic was implemented from scratch using custom CSS variables:
+- **Glassmorphism:** Semi-transparent cards and sidebars over a deep navy background (`#0d1117`).
+- **Typography:** `Inter` font for clean, modern readability.
+- **Interactive Elements:** Smooth 150ms transitions on buttons and nav links, with color-coded status badges for roles and states.
+- **Components:** Reusable `<Modal>`, `<Badge>`, and auto-dismissing `<Toast>` notifications.
+
+---
+
+## 9. Requirements Coverage
+
+### 9.1 Core Requirements ✅
 
 | Requirement | Implementation |
 |-------------|---------------|
@@ -465,7 +491,7 @@ public static JsonValue toJson(User user) {
 | Teacher positions | `TeacherPosition` enum (`PROFESSOR`, `LECTOR`, `SENIOR_LECTOR`, `ASSISTANT`) |
 | Teacher rating | `RateTeacher` use case |
 
-### 8.2 Bonus Features ✅
+### 9.2 Bonus Features ✅
 
 | Bonus | Implementation |
 |-------|---------------|
@@ -483,10 +509,11 @@ public static JsonValue toJson(User user) {
 | Dual persistence stack | `OrmXxxRepository` (production) + `InMemoryXxxRepository` (tests) |
 | Student organizations | `Organization` entity + `CreateOrganization` / `JoinOrganization` |
 | Audit logging | `RepositoryLogger` writes every mutating operation to `LogRepository` |
+| **Full SPA Frontend** | React + Vite app with custom design system and role-based routing |
 
 ---
 
-## 9. Testing
+## 10. Testing
 
 52 tests with zero external test framework (no JUnit, no TestNG). The project ships its own `Assert` utility and `TestRunner`.
 
@@ -508,7 +535,7 @@ In-memory repositories are used exclusively, so tests never touch the filesystem
 
 ---
 
-## 10. Project Structure (Final)
+## 11. Project Structure (Final)
 
 ```
 university-system/

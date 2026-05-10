@@ -7,8 +7,18 @@ A console-based university management system built in **Java 17+** as an OOP fin
 ## Quick Start
 
 ```bash
-# Build a self-contained JAR
-chmod +x scripts/build.sh
+# Build and run EVERYTHING (Backend API + React Frontend)
+bash scripts/start.sh
+```
+
+This will automatically build the backend JAR, install frontend dependencies, and start both servers concurrently. Open `http://localhost:5173` in your browser.
+
+---
+
+### Manual Execution
+
+```bash
+# Build the self-contained JAR
 bash scripts/build.sh
 ```
 

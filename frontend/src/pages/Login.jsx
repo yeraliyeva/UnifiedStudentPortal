@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useI18n } from "../context/I18nContext.jsx";
 import * as api from "../api/index.js";
 
 export function Login() {
   const { signIn } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
@@ -16,10 +18,10 @@ export function Login() {
     setLoading(true);
     try {
       const data = await api.login(form.username, form.password);
-      signIn(data.token, data.username, data.role);
+      signIn(data.token, data.username, data.role, data.isResearcher);
       navigate("/");
     } catch (err) {
-      setError(err?.message || "Invalid credentials");
+      setError(t(err?.message || "Invalid credentials"));
     } finally {
       setLoading(false);
     }
@@ -30,12 +32,12 @@ export function Login() {
       <div style={{ width: "100%", maxWidth: 400, padding: "0 20px" }}>
         <div style={{ textAlign:"center", marginBottom:32 }}>
           <div style={{ fontSize:40, marginBottom:8 }}>🎓</div>
-          <h1 style={{ fontSize:24, fontWeight:700, color:"var(--text)" }}>University System</h1>
-          <p style={{ color:"var(--text-2)", marginTop:4, fontSize:13 }}>Sign in to continue</p>
+          <h1 style={{ fontSize:24, fontWeight:700, color:"var(--text)" }}>{t("ui.university_system")}</h1>
+          <p style={{ color:"var(--text-2)", marginTop:4, fontSize:13 }}>{t("ui.sign_in_to_continue")}</p>
         </div>
         <form className="card" onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:16 }}>
           <div className="form-group" style={{ marginBottom:0 }}>
-            <label>Username</label>
+            <label>{t("ui.username")}</label>
             <input
               className="form-control"
               value={form.username}
@@ -45,7 +47,7 @@ export function Login() {
             />
           </div>
           <div className="form-group" style={{ marginBottom:0 }}>
-            <label>Password</label>
+            <label>{t("ui.password")}</label>
             <input
               className="form-control"
               type="password"
@@ -56,11 +58,11 @@ export function Login() {
           </div>
           {error && <div style={{ color:"var(--danger)", fontSize:13 }}>{error}</div>}
           <button className="btn btn-primary" disabled={loading} style={{ marginTop:4 }}>
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? t("ui.signing_in") : t("ui.sign_in")}
           </button>
         </form>
         <p style={{ textAlign:"center", color:"var(--text-2)", fontSize:12, marginTop:20 }}>
-          Demo: admin / admin &nbsp;·&nbsp; eve / eve &nbsp;·&nbsp; bob / bob
+          {t("ui.demo_admin_admin_u00a0_u00b7_u00a0_eve_e")}
         </p>
       </div>
     </div>

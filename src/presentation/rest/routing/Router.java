@@ -28,7 +28,7 @@ public final class Router implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin",  "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept-Language");
 
         if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
             exchange.sendResponseHeaders(204, -1);
@@ -36,6 +36,13 @@ public final class Router implements HttpHandler {
         }
 
         HttpRequest request = HttpRequest.from(exchange);
+
+        String langHeader = request.header("Accept-Language").orElse("en").toLowerCase();
+        domain.enums.Language lang = domain.enums.Language.ENGLISH;
+        if (langHeader.startsWith("ru")) lang = domain.enums.Language.RUSSIAN;
+        else if (langHeader.startsWith("kz") || langHeader.startsWith("kk")) lang = domain.enums.Language.KAZAKH;
+        infrastructure.i18n.PropertiesTranslator.INSTANCE.switchTo(lang);
+
         HttpResponse response = dispatch(request);
         response.send(exchange);
     }

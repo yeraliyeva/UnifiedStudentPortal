@@ -122,7 +122,7 @@ export function Gradebook() {
                           </td>
                           <td>{g.firstHalf}</td><td>{g.secondHalf}</td><td>{g.exam}</td><td>{g.total}</td>
                           <td><Badge label={g.letter} /></td>
-                          <td><Badge label={t(g.passing ? "PASSING" : "FAILING")} /></td>
+                          <td><Badge tone={g.passing ? "PASSING" : "FAILING"} label={t(g.passing ? "PASSING" : "FAILING")} /></td>
                         </tr>
                       );
                     })}

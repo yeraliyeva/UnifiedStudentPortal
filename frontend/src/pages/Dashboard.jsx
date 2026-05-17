@@ -68,7 +68,7 @@ export function Dashboard() {
             <div key={m.id} style={{ paddingBottom:10, marginBottom:10, borderBottom:"1px solid var(--border)" }}>
               <div className="flex-between">
                 <span className="fw-600" style={{ fontSize:13 }}>{m.subject}</span>
-                <Badge label={t(m.urgency)} />
+                <Badge tone={m.urgency} label={t(m.urgency)} />
               </div>
               <p className="text-muted text-sm mt-1">
                 {t("ui.from_1")} {m.senderFullName || m.sender}

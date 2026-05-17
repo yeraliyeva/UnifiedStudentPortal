@@ -109,7 +109,7 @@ export function Orders() {
                     {o.requesterFullName || o.requester}
                     {o.requesterFullName && <span className="text-muted text-sm"> @{o.requester}</span>}
                   </td>
-                  <td><Badge label={t(o.status)} /></td>
+                  <td><Badge tone={o.status} label={t(o.status)} /></td>
                   <td className="text-muted text-sm">{o.createdAt?.slice(0, 10)}</td>
                   {isTech && (
                     <td>

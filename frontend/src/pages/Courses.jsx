@@ -64,7 +64,7 @@ export function Courses() {
           <div key={c.id} className="card card-sm" style={{ display:"flex", flexDirection:"column", gap:8 }}>
             <div className="flex-between">
               <span className="fw-600">{c.name}</span>
-              <Badge label={t(c.type)} />
+              <Badge tone={c.type} label={t(c.type)} />
             </div>
             <div className="text-muted text-sm">
               {t("ui.id")}: {c.id} · {c.credits} {t("ui.credits")} · {c.remainingSeats}/{c.capacity} {t("ui.seats")}

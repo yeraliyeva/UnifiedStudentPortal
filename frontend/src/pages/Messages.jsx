@@ -87,8 +87,8 @@ export function Messages() {
                       ? <><strong>{m.senderFullName}</strong> <span className="text-muted text-sm">@{m.sender}</span></>
                       : m.sender}
                   </td>
-                  <td><Badge label={t(m.urgency)} /></td>
-                  <td><Badge label={t(m.status)} /></td>
+                  <td><Badge tone={m.urgency} label={t(m.urgency)} /></td>
+                  <td><Badge tone={m.status} label={t(m.status)} /></td>
                   <td className="text-muted text-sm">{m.sentAt?.slice(0, 16).replace("T", " ")}</td>
                 </tr>
               ))}

@@ -112,10 +112,10 @@ export function Requests() {
             <div key={r.id} className="card card-sm">
               <div className="flex-between">
                 <span className="fw-600">{r.title}</span>
-                <Badge label={t(r.status)} />
+                <Badge tone={r.status} label={t(r.status)} />
               </div>
               <div className="text-muted text-sm mt-1">
-                {t(r.type)} · <Badge label={t(r.urgency)} />
+                {t(r.type)} · <Badge tone={r.urgency} label={t(r.urgency)} />
               </div>
               <div className="text-muted text-sm mt-1">
                 {t("ui.by")} <strong>{r.requesterFullName || r.requester}</strong>

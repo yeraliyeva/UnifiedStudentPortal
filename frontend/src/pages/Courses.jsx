@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useI18n } from "../context/I18nContext.jsx";
 import { Badge } from "../components/Badge.jsx";
 import { Modal } from "../components/Modal.jsx";
 import { useToast } from "../components/Toast.jsx";
@@ -7,6 +8,7 @@ import * as api from "../api/index.js";
 
 export function Courses() {
   const { auth } = useAuth();
+  const { t } = useI18n();
   const { toast, Toasts } = useToast();
   const role = auth?.role;
   const [courses, setCourses] = useState([]);
@@ -18,18 +20,18 @@ export function Courses() {
   const load = () => api.listCourses().then(setCourses).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
 
-  async function handleEnroll(id) {
-    try { await api.enroll(id); toast("Enrolled successfully!"); load(); }
-    catch (e) { toast(e?.message || "Failed", "error"); }
+  async function handleEnroll(c) {
+    try { await api.enroll(c.id); toast(t("enroll.success", c.name)); load(); }
+    catch (e) { toast(t(e?.message || "Failed"), "error"); }
   }
-  async function handleDrop(id) {
-    try { await api.drop(id); toast("Dropped course"); load(); }
-    catch (e) { toast(e?.message || "Failed", "error"); }
+  async function handleDrop(c) {
+    try { await api.drop(c.id); toast(t("drop.success", c.name)); load(); }
+    catch (e) { toast(t(e?.message || "Failed"), "error"); }
   }
   async function handleCreate(e) {
     e.preventDefault();
-    try { await api.createCourse(form); toast("Course created!"); setShowCreate(false); load(); }
-    catch (e) { toast(e?.message || "Failed", "error"); }
+    try { await api.createCourse(form); toast(t("course.created", form.name)); setShowCreate(false); load(); }
+    catch (e) { toast(t(e?.message || "Failed"), "error"); }
   }
 
   const filtered = courses.filter(c =>
@@ -43,16 +45,16 @@ export function Courses() {
     <div className="page">
       <Toasts />
       <div className="page-header flex-between">
-        <div><h1>Courses</h1><p>{courses.length} courses available</p></div>
+        <div><h1>{t("ui.courses_1")}</h1><p>{t("ui.0_courses_available", courses.length)}</p></div>
         {role === "Manager" && (
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>＋ New Course</button>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>＋ {t("ui.new_course")}</button>
         )}
       </div>
 
       <input
         className="form-control mb-3"
         style={{ maxWidth:320 }}
-        placeholder="Search courses…"
+        placeholder={t("ui.search_courses")}
         value={search}
         onChange={e => setSearch(e.target.value)}
       />
@@ -62,48 +64,48 @@ export function Courses() {
           <div key={c.id} className="card card-sm" style={{ display:"flex", flexDirection:"column", gap:8 }}>
             <div className="flex-between">
               <span className="fw-600">{c.name}</span>
-              <Badge label={c.type} />
+              <Badge label={t(c.type)} />
             </div>
             <div className="text-muted text-sm">
-              ID: {c.id} · {c.credits} credits · {c.remainingSeats}/{c.capacity} seats
+              {t("ui.id")}: {c.id} · {c.credits} {t("ui.credits")} · {c.remainingSeats}/{c.capacity} {t("ui.seats")}
             </div>
             <div style={{ display:"flex", gap:8, marginTop:4 }}>
               {["Student","GraduateStudent"].includes(role) && !c.isFull && (
-                <button className="btn btn-primary btn-sm" onClick={() => handleEnroll(c.id)}>Enroll</button>
+                <button className="btn btn-primary btn-sm" onClick={() => handleEnroll(c)}>{t("ui.enroll")}</button>
               )}
               {["Student","GraduateStudent"].includes(role) && (
-                <button className="btn btn-secondary btn-sm" onClick={() => handleDrop(c.id)}>Drop</button>
+                <button className="btn btn-secondary btn-sm" onClick={() => handleDrop(c)}>{t("ui.drop")}</button>
               )}
-              {c.isFull && <Badge label="FULL" />}
+              {c.isFull && <Badge label={t("ui.full")} />}
             </div>
           </div>
         ))}
-        {filtered.length === 0 && <div className="empty"><div className="empty-icon">📚</div><p>No courses found</p></div>}
+        {filtered.length === 0 && <div className="empty"><div className="empty-icon">📚</div><p>{t("course.list.empty")}</p></div>}
       </div>
 
       {showCreate && (
-        <Modal title="Create Course" onClose={() => setShowCreate(false)}
+        <Modal title={t("manager.menu.create_course")} onClose={() => setShowCreate(false)}
           actions={<>
-            <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
-            <button className="btn btn-primary" form="create-course-form">Create</button>
+            <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t("common.back")}</button>
+            <button className="btn btn-primary" form="create-course-form">{t("ui.create")}</button>
           </>}>
           <form id="create-course-form" onSubmit={handleCreate} style={{ display:"flex", flexDirection:"column", gap:14 }}>
             <div className="form-group" style={{ marginBottom:0 }}>
-              <label>Course Name</label>
+              <label>{t("ui.course_name")}</label>
               <input className="form-control" required value={form.name} onChange={e => setForm({...form, name:e.target.value})} />
             </div>
             <div className="form-row">
               <div className="form-group" style={{ marginBottom:0 }}>
-                <label>Credits</label>
+                <label>{t("ui.credits_1")}</label>
                 <input className="form-control" type="number" min="1" max="10" value={form.credits} onChange={e => setForm({...form, credits:+e.target.value})} />
               </div>
               <div className="form-group" style={{ marginBottom:0 }}>
-                <label>Capacity</label>
+                <label>{t("ui.capacity")}</label>
                 <input className="form-control" type="number" min="1" value={form.capacity} onChange={e => setForm({...form, capacity:+e.target.value})} />
               </div>
             </div>
             <div className="form-group" style={{ marginBottom:0 }}>
-              <label>Type</label>
+              <label>{t("ui.type")}</label>
               <select className="form-control" value={form.type} onChange={e => setForm({...form, type:e.target.value})}>
                 <option>MAJOR</option><option>MINOR</option><option>FREE</option>
               </select>

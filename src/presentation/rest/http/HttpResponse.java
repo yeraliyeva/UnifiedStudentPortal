@@ -32,8 +32,9 @@ public final class HttpResponse {
     }
 
     public static HttpResponse fail(HttpStatus status, String message) {
+        String translated = infrastructure.i18n.PropertiesTranslator.INSTANCE.get(message);
         JsonValue errorBody = JsonObjectBuilder.create()
-                .put("error", message)
+                .put("error", translated)
                 .build();
         return new HttpResponse(status, errorBody);
     }

@@ -110,6 +110,18 @@ public final class ResearchController {
         return resultToResponse(result);
     }
 
+    /** POST /api/research/become */
+    public HttpResponse becomeResearcher(HttpRequest request) {
+        User user = RequestContext.current();
+        String field = str(request.body(), "field");
+        if (field.isBlank()) return HttpResponse.badRequest("Field is required.");
+        Result result = ctx.becomeResearcher.execute(user, field);
+        if (result.success()) {
+            ctx.userRepository.save(user);
+        }
+        return resultToResponse(result);
+    }
+
     private static JsonValue paperToJson(ResearchPaper p) {
         return JsonObjectBuilder.create()
                 .put("id",        p.id().value())

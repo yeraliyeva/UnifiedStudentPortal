@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useI18n } from "../context/I18nContext.jsx";
 import * as api from "../api/index.js";
 import { Badge } from "../components/Badge.jsx";
 
 export function Dashboard() {
   const { auth } = useAuth();
+  const { t } = useI18n();
   const role = auth?.role;
   const [news, setNews] = useState([]);
   const [msgs, setMsgs] = useState([]);
@@ -25,34 +27,34 @@ export function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Welcome back, {auth?.username} 👋</h1>
-        <p>You are logged in as <strong>{role}</strong></p>
+        <h1>{t("ui.welcome_back")}, {auth?.username} 👋</h1>
+        <p>{t("ui.you_are_logged_in_as")} <strong>{t(role)}</strong></p>
       </div>
 
       <div className="stat-grid">
         <div className="stat-card">
           <div className="stat-value">{courses.length}</div>
-          <div className="stat-label">Courses available</div>
+          <div className="stat-label">{t("ui.courses_available")}</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{msgs.length}</div>
-          <div className="stat-label">Inbox messages</div>
+          <div className="stat-label">{t("ui.inbox_messages")}</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{news.length}</div>
-          <div className="stat-label">Latest news</div>
+          <div className="stat-label">{t("ui.latest_news")}</div>
         </div>
       </div>
 
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
         <div className="card">
-          <div className="section-title">Latest News</div>
-          {news.length === 0 && <div className="empty"><p>No news</p></div>}
+          <div className="section-title">{t("ui.latest_news_1")}</div>
+          {news.length === 0 && <div className="empty"><p>{t("news.empty")}</p></div>}
           {news.map((n) => (
             <div key={n.id} style={{ paddingBottom:12, marginBottom:12, borderBottom:"1px solid var(--border)" }}>
               <div className="flex-between">
                 <span className="fw-600" style={{ fontSize:13 }}>{n.title}</span>
-                {n.pinned && <Badge label="PINNED" />}
+                {n.pinned && <Badge label={t("ui.pinned")} />}
               </div>
               <p className="text-muted text-sm mt-1">{n.body?.slice(0, 100)}…</p>
             </div>
@@ -60,15 +62,15 @@ export function Dashboard() {
         </div>
 
         <div className="card">
-          <div className="section-title">Recent Messages</div>
-          {msgs.length === 0 && <div className="empty"><p>Inbox empty</p></div>}
+          <div className="section-title">{t("ui.recent_messages")}</div>
+          {msgs.length === 0 && <div className="empty"><p>{t("inbox.empty")}</p></div>}
           {msgs.map((m) => (
             <div key={m.id} style={{ paddingBottom:10, marginBottom:10, borderBottom:"1px solid var(--border)" }}>
               <div className="flex-between">
                 <span className="fw-600" style={{ fontSize:13 }}>{m.subject}</span>
-                <Badge label={m.urgency} />
+                <Badge label={t(m.urgency)} />
               </div>
-              <p className="text-muted text-sm mt-1">from {m.sender}</p>
+              <p className="text-muted text-sm mt-1">{t("ui.from_1")} {m.sender}</p>
             </div>
           ))}
         </div>

@@ -7,4 +7,5 @@ public interface Translator {
     String fmt(String key, Object... args);
     void switchTo(Language language);
     Language current();
+    java.util.Map<String, String> getAll();
 }

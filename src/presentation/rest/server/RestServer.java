@@ -29,9 +29,11 @@ public final class RestServer {
         LibraryController   library   = new LibraryController(ctx);
         MessagingController messaging = new MessagingController(ctx);
         ResearchController  research  = new ResearchController(ctx);
+        SystemController    system    = new SystemController();
 
         router.register(Route.of(HttpMethod.POST, "/api/login",  auth::login));
         router.register(Route.of(HttpMethod.POST, "/api/logout", auth::logout));
+        router.register(Route.of(HttpMethod.GET,  "/api/system/messages", system::getMessages));
 
         router.register(Route.of(HttpMethod.GET,    "/api/users",            admin::listUsers,    Admin.class));
         router.register(Route.of(HttpMethod.GET,    "/api/users/{username}", admin::getUser,      Admin.class));
@@ -75,6 +77,7 @@ public final class RestServer {
         router.register(Route.of(HttpMethod.POST,   "/api/projects/{journal}/join", research::joinProject,  User.class));
         router.register(Route.of(HttpMethod.POST,   "/api/subscriptions",           research::subscribe,    User.class));
         router.register(Route.of(HttpMethod.DELETE, "/api/subscriptions/{journal}", research::unsubscribe,  User.class));
+        router.register(Route.of(HttpMethod.POST,   "/api/research/become",         research::becomeResearcher, User.class));
 
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api", router);

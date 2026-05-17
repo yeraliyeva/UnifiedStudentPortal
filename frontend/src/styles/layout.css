@@ -1,107 +1,121 @@
 /* ── Sidebar ─────────────────────────────────────────────────── */
 .sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 260px;
+  min-width: 260px;
   background: var(--bg-2);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
+  box-shadow: 1px 0 0 rgba(0,0,0,0.02);
 }
 .sidebar-brand {
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 32px 24px 24px;
 }
 .sidebar-brand .brand-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text);
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 .sidebar-brand .brand-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
-  font-weight: 500;
-  margin-top: 2px;
+  font-weight: 600;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .sidebar-user {
-  margin: 14px 12px;
+  margin: 0 16px 20px;
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sidebar-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-glow);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+}
+.sidebar-user-info {
+  flex: 1;
 }
 .sidebar-user .user-name {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--text);
 }
 .sidebar-user .user-role {
-  font-size: 11px;
-  color: var(--accent);
+  font-size: 12px;
+  color: var(--text-2);
   margin-top: 2px;
   font-weight: 500;
 }
 .sidebar-nav {
   flex: 1;
-  padding: 8px 10px;
+  padding: 0 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 .sidebar-section {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-3);
-  padding: 10px 10px 4px;
+  padding: 20px 12px 8px;
 }
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
   color: var(--text-2);
-  font-size: 13px;
-  font-weight: 500;
-  transition: background var(--transition), color var(--transition);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all var(--transition);
   cursor: pointer;
   border: none;
-  background: none;
+  background: transparent;
   width: 100%;
   text-align: left;
   text-decoration: none;
 }
-.nav-link:hover { background: var(--bg-3); color: var(--text); }
+.nav-link:hover { background: var(--bg-3); color: var(--text); transform: translateX(2px); }
 .nav-link.active { background: var(--accent-glow); color: var(--accent); }
-.nav-link .nav-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-link.active .nav-icon { color: var(--accent); }
+.nav-link .nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; color: var(--text-3); transition: color var(--transition); }
 .sidebar-footer {
-  padding: 12px 10px;
-  border-top: 1px solid var(--border);
-}
-
-/* ── TopBar ─────────────────────────────────────────────────── */
-.topbar {
-  height: 56px;
-  min-height: 56px;
-  border-bottom: 1px solid var(--border);
+  padding: 20px 16px;
   display: flex;
-  align-items: center;
-  padding: 0 32px;
-  background: var(--bg);
-  gap: 12px;
-}
-.topbar-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  flex: 1;
-}
-.topbar-actions {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
 }
+.language-selector {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+.language-selector:focus { border-color: var(--accent); }

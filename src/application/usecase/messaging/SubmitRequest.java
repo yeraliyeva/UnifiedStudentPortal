@@ -20,10 +20,10 @@ public final class SubmitRequest {
         this.logger = logger;
     }
 
-    public Result execute(User user, HelpType type, UrgencyLevel urgency, String additionalInfo) {
-        Request r = new Request(ids.next(), user.username(), type, user.faculty(), urgency, additionalInfo);
+    public Result execute(User user, String title, HelpType type, UrgencyLevel urgency, String additionalInfo) {
+        Request r = new Request(ids.next(), user.username(), title, type, user.faculty(), urgency, additionalInfo);
         requests.save(r);
-        logger.log(user.username(), "Submitted request: " + type);
+        logger.log(user.username(), "Submitted request: " + type + " — " + title);
         return Result.ok("Request submitted: " + r);
     }
 }

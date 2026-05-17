@@ -100,14 +100,21 @@ public final class MessagingController {
     public HttpResponse submitRequest(HttpRequest request) {
         User user = RequestContext.current();
         JsonValue.JsonObject body = request.body();
+        String title = str(body, "title");
+        String info  = str(body, "body");
+        if (info.isBlank()) info = str(body, "info");
+        String urgencyRaw = str(body, "urgency");
+        if (urgencyRaw.isBlank()) urgencyRaw = "MEDIUM";
+        if (title.isBlank()) return HttpResponse.badRequest("'title' is required.");
         try {
-            HelpType    type    = HelpType.valueOf(str(body, "type").toUpperCase());
-            UrgencyLevel urgency = UrgencyLevel.valueOf(str(body, "urgency").toUpperCase());
-            String info  = str(body, "info");
-            Result result = ctx.submitRequest.execute(user, type, urgency, info);
+            HelpType     type    = HelpType.valueOf(str(body, "type").toUpperCase());
+            UrgencyLevel urgency = UrgencyLevel.valueOf(urgencyRaw.toUpperCase());
+            Result result = ctx.submitRequest.execute(user, title, type, urgency, info);
             return resultToResponse(result);
         } catch (IllegalArgumentException e) {
-            return HttpResponse.badRequest("Invalid type or urgency: " + e.getMessage());
+            return HttpResponse.badRequest("Invalid type or urgency. Allowed types: "
+                    + java.util.Arrays.toString(HelpType.values())
+                    + "; urgency: LOW, MEDIUM, HIGH.");
         }
     }
 
@@ -165,14 +172,20 @@ public final class MessagingController {
                 .build();
     }
 
-    private static JsonValue requestToJson(Request r) {
-        return JsonObjectBuilder.create()
+    private JsonValue requestToJson(Request r) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
                 .put("id",        r.id())
                 .put("requester", r.requester().value())
+                .put("title",     r.title())
                 .put("type",      r.type().name())
+                .put("faculty",   r.faculty().name())
                 .put("urgency",   r.urgency().name())
-                .put("status",    r.status().name())
-                .build();
+                .put("body",      r.additionalInfo())
+                .put("createdAt", r.createdAt().toString())
+                .put("status",    r.status().name());
+        ctx.userRepository.findByUsername(r.requester())
+                .ifPresent(u -> b.put("requesterFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
     private static JsonValue orderToJson(Order o) {

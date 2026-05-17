@@ -2,7 +2,7 @@ const BASE = "http://localhost:8080/api";
 
 export async function request(method, path, body) {
   const token = localStorage.getItem("token");
-  const lang = localStorage.getItem("language") || "en";
+  const lang = localStorage.getItem("lang") || "en";
   const res = await fetch(BASE + path, {
     method,
     headers: {

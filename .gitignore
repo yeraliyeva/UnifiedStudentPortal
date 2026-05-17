@@ -1,6 +1,9 @@
 out/
 *.class
+*.jar
 .DS_Store
 data/
+data.bak.*/
 .idea/
-university-system.jar
+node_modules/
+frontend/dist/

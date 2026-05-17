@@ -45,5 +45,6 @@ export const getCitation   = (id, fmt) => get(`/papers/${id}/cite?format=${fmt}`
 export const listProjects  = ()        => get("/projects");
 export const createProject = (data)    => post("/projects", data);
 export const joinProject   = (journal) => post(`/projects/${encodeURIComponent(journal)}/join`);
-export const subscribe     = (journal) => post("/subscriptions", { journal });
-export const unsubscribe   = (journal) => del(`/subscriptions/${encodeURIComponent(journal)}`);
+export const subscribe        = (journal) => post("/subscriptions", { journal });
+export const unsubscribe      = (journal) => del(`/subscriptions/${encodeURIComponent(journal)}`);
+export const becomeResearcher = (field)   => post("/research/become", { field });

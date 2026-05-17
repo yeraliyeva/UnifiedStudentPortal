@@ -3,13 +3,16 @@ package presentation.rest.controller;
 import application.Result;
 import bootstrap.AppContext;
 import domain.enums.HelpType;
+import domain.enums.RequestStatus;
 import domain.enums.UrgencyLevel;
 import domain.messaging.Message;
 import domain.messaging.News;
 import domain.messaging.Order;
 import domain.messaging.Request;
 import domain.shared.Username;
+import domain.user.Dean;
 import domain.user.Employee;
+import domain.user.Manager;
 import domain.user.User;
 import infrastructure.persistence.json.JsonObjectBuilder;
 import infrastructure.persistence.json.JsonValue;
@@ -88,12 +91,42 @@ public final class MessagingController {
     }
 
 
-    /** GET /api/requests */
+    /** GET /api/requests — requesters see their own; Managers/Deans see all. */
     public HttpResponse listRequests(HttpRequest request) {
-        List<Request> all = ctx.requestRepository.findAll();
+        User user = RequestContext.current();
+        List<Request> visible = canProcessRequests(user)
+                ? ctx.requestRepository.findAll()
+                : ctx.requestRepository.findByRequester(user.username());
         List<JsonValue> arr = new ArrayList<>();
-        for (Request r : all) arr.add(requestToJson(r));
+        for (Request r : visible) arr.add(requestToJson(r));
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
+    }
+
+    /** PUT /api/requests/{id} — Manager/Dean only; body: {"status": "APPROVED" | "REJECTED" | ...}. */
+    public HttpResponse processRequest(HttpRequest request) {
+        User actor = RequestContext.current();
+        if (!canProcessRequests(actor)) return HttpResponse.forbidden();
+
+        int id;
+        try {
+            id = Integer.parseInt(request.pathSegment(2).orElse(""));
+        } catch (NumberFormatException e) {
+            return HttpResponse.badRequest("Invalid request id.");
+        }
+
+        String statusRaw = str(request.body(), "status");
+        try {
+            RequestStatus status = RequestStatus.valueOf(statusRaw.toUpperCase());
+            Result result = ctx.processRequest.execute(actor.username(), id, status);
+            return resultToResponse(result);
+        } catch (IllegalArgumentException e) {
+            return HttpResponse.badRequest("Invalid status. Allowed: "
+                    + java.util.Arrays.toString(RequestStatus.values()));
+        }
+    }
+
+    private static boolean canProcessRequests(User user) {
+        return user instanceof Manager || user instanceof Dean;
     }
 
     /** POST /api/requests */

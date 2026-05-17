@@ -62,8 +62,9 @@ public final class RestServer {
         router.register(Route.of(HttpMethod.GET,  "/api/news",                 messaging::listNews,     User.class));
         router.register(Route.of(HttpMethod.POST, "/api/news",                 messaging::publishNews,  Employee.class));
         router.register(Route.of(HttpMethod.POST, "/api/news/{id}/comment",    messaging::commentOnNews,User.class));
-        router.register(Route.of(HttpMethod.GET,  "/api/requests",             messaging::listRequests, User.class));
-        router.register(Route.of(HttpMethod.POST, "/api/requests",             messaging::submitRequest,User.class));
+        router.register(Route.of(HttpMethod.GET,  "/api/requests",             messaging::listRequests,   User.class));
+        router.register(Route.of(HttpMethod.POST, "/api/requests",             messaging::submitRequest,  User.class));
+        router.register(Route.of(HttpMethod.PUT,  "/api/requests/{id}",        messaging::processRequest, User.class));
         router.register(Route.of(HttpMethod.GET,  "/api/orders",               messaging::listOrders,   TechSupport.class));
         router.register(Route.of(HttpMethod.POST, "/api/orders",               messaging::createOrder,  User.class));
         router.register(Route.of(HttpMethod.PUT,  "/api/orders/{id}/accept",   messaging::acceptOrder,  TechSupport.class));

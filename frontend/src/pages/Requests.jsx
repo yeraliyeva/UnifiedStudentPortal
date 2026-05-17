@@ -25,7 +25,10 @@ export function Requests() {
   const [showModal, setShowModal] = useState(false);
   const [expanded, setExpanded] = useState(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [form, setForm] = useState({ title: "", body: "", type: HELP_TYPES[0], urgency: "MEDIUM" });
+
+  const canProcess = ["Manager", "Dean"].includes(auth?.role);
 
   const load = () => api.listRequests().then(setRequests).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
@@ -43,16 +46,30 @@ export function Requests() {
     }
   }
 
+  async function decide(id, status) {
+    try {
+      await api.processRequest(id, status);
+      toast(t(status));
+      load();
+    } catch (err) {
+      toast(t(err?.message || "Failed"), "error");
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return requests;
-    return requests.filter(r =>
-      r.title?.toLowerCase().includes(q) ||
-      r.body?.toLowerCase().includes(q) ||
-      r.requester?.toLowerCase().includes(q) ||
-      t(r.type)?.toLowerCase().includes(q)
-    );
-  }, [requests, search, t]);
+    return requests.filter(r => {
+      if (statusFilter !== "ALL" && r.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        r.title?.toLowerCase().includes(q) ||
+        r.body?.toLowerCase().includes(q) ||
+        r.requester?.toLowerCase().includes(q) ||
+        r.requesterFullName?.toLowerCase().includes(q) ||
+        t(r.type)?.toLowerCase().includes(q)
+      );
+    });
+  }, [requests, search, statusFilter, t]);
 
   if (loading) return <div className="page"><div className="spinner" /></div>;
 
@@ -67,13 +84,26 @@ export function Requests() {
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>＋ {t("ui.new_request")}</button>
       </div>
 
-      <input
-        className="form-control mb-3"
-        style={{ maxWidth: 360 }}
-        placeholder={t("ui.search_requests")}
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap" }}>
+        <input
+          className="form-control"
+          style={{ maxWidth: 360, flex: 1, minWidth: 200 }}
+          placeholder={t("ui.search_requests")}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <select
+          className="form-control"
+          style={{ maxWidth: 200 }}
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+        >
+          <option value="ALL">{t("ui.status")}: {t("ui.all")}</option>
+          {["PENDING", "APPROVED", "REJECTED", "ACCEPTED", "NOT_APPROVED"].map(s =>
+            <option key={s} value={s}>{t(s)}</option>
+          )}
+        </select>
+      </div>
 
       <div className="card-grid">
         {filtered.map(r => {
@@ -108,10 +138,20 @@ export function Requests() {
                 </div>
               )}
 
-              <div className="flex-between mt-2">
+              <div className="flex-between mt-2" style={{ gap: 8, flexWrap: "wrap" }}>
                 <button className="btn btn-secondary btn-sm" onClick={() => setExpanded(open ? null : r.id)}>
                   {open ? t("ui.collapse") : t("ui.read_more")}
                 </button>
+                {canProcess && r.status === "PENDING" && (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button className="btn btn-primary btn-sm" onClick={() => decide(r.id, "APPROVED")}>
+                      ✓ {t("ui.approve")}
+                    </button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => decide(r.id, "REJECTED")}>
+                      ✗ {t("ui.reject")}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           );

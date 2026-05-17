@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { useI18n } from "../context/I18nContext.jsx";
 import { Badge } from "../components/Badge.jsx";
 import { Modal } from "../components/Modal.jsx";
+import { UserPicker } from "../components/UserPicker.jsx";
 import { useToast } from "../components/Toast.jsx";
 import * as api from "../api/index.js";
 
@@ -11,6 +12,7 @@ export function Gradebook() {
   const { toast, Toasts } = useToast();
   const { t } = useI18n();
   const [courses, setCourses] = useState([]);
+  const [directory, setDirectory] = useState([]);
   const [selected, setSelected] = useState(null);
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +20,10 @@ export function Gradebook() {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState({ studentUsername:"", firstHalf:0, secondHalf:0, exam:0 });
 
-  useEffect(() => { api.listCourses().then(setCourses).finally(() => setLoading(false)); }, []);
+  useEffect(() => {
+    api.listCourses().then(setCourses).finally(() => setLoading(false));
+    api.userDirectory().then(setDirectory).catch(() => {});
+  }, []);
 
   const myCourses = useMemo(() => {
     if (auth?.role === "Dean") return courses;
@@ -37,6 +42,12 @@ export function Gradebook() {
     () => myCourses.find(c => c.id === selected),
     [myCourses, selected]
   );
+
+  const enrolledStudents = useMemo(() => {
+    if (!selectedCourse) return [];
+    const enrolled = new Set(selectedCourse.students ?? []);
+    return directory.filter(u => enrolled.has(u.username));
+  }, [selectedCourse, directory]);
 
   async function loadGrades(id) {
     setSelected(id);
@@ -101,14 +112,20 @@ export function Gradebook() {
                 <table>
                   <thead><tr><th>{t("ui.student")}</th><th>{t("ui.1st")}</th><th>{t("ui.2nd")}</th><th>{t("ui.exam")}</th><th>{t("ui.total")}</th><th>{t("ui.grade")}</th><th>{t("ui.passing")}</th></tr></thead>
                   <tbody>
-                    {grades.map((g, i) => (
-                      <tr key={i}>
-                        <td className="fw-600">{g.student}</td>
-                        <td>{g.firstHalf}</td><td>{g.secondHalf}</td><td>{g.exam}</td><td>{g.total}</td>
-                        <td><Badge label={g.letter} /></td>
-                        <td><Badge label={t(g.passing ? "PASSING" : "FAILING")} /></td>
-                      </tr>
-                    ))}
+                    {grades.map((g, i) => {
+                      const user = directory.find(u => u.username === g.student);
+                      return (
+                        <tr key={i}>
+                          <td className="fw-600">
+                            {user?.fullName || g.student}
+                            {user?.fullName && <span className="text-muted text-sm"> @{g.student}</span>}
+                          </td>
+                          <td>{g.firstHalf}</td><td>{g.secondHalf}</td><td>{g.exam}</td><td>{g.total}</td>
+                          <td><Badge label={g.letter} /></td>
+                          <td><Badge label={t(g.passing ? "PASSING" : "FAILING")} /></td>
+                        </tr>
+                      );
+                    })}
                     {grades.length === 0 && <tr><td colSpan="7" style={{ textAlign:"center", color:"var(--text-2)" }}>{t("ui.no_grades_yet")}</td></tr>}
                   </tbody>
                 </table>
@@ -126,8 +143,13 @@ export function Gradebook() {
           </>}>
           <form id="marks-form" onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:14 }}>
             <div className="form-group" style={{ marginBottom:0 }}>
-              <label>{t("ui.student_username")}</label>
-              <input className="form-control" required value={form.studentUsername} onChange={e => setForm({...form, studentUsername:e.target.value})} />
+              <label>{t("ui.student")}</label>
+              <UserPicker
+                users={enrolledStudents}
+                value={form.studentUsername}
+                onChange={v => setForm({ ...form, studentUsername: v })}
+                placeholder={t("ui.search_users")}
+              />
             </div>
             <div className="form-row">
               <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.1st_attestation_0_30")}</label>

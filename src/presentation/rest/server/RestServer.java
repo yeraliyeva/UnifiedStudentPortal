@@ -29,11 +29,12 @@ public final class RestServer {
         LibraryController   library   = new LibraryController(ctx);
         MessagingController messaging = new MessagingController(ctx);
         ResearchController  research  = new ResearchController(ctx);
-        SystemController    system    = new SystemController();
+        SystemController    system    = new SystemController(ctx);
 
         router.register(Route.of(HttpMethod.POST, "/api/login",  auth::login));
         router.register(Route.of(HttpMethod.POST, "/api/logout", auth::logout));
-        router.register(Route.of(HttpMethod.GET,  "/api/system/messages", system::getMessages));
+        router.register(Route.of(HttpMethod.GET,  "/api/system/messages",  system::getMessages));
+        router.register(Route.of(HttpMethod.GET,  "/api/users/directory",  system::getDirectory, User.class));
 
         router.register(Route.of(HttpMethod.GET,    "/api/users",            admin::listUsers,    Admin.class));
         router.register(Route.of(HttpMethod.GET,    "/api/users/{username}", admin::getUser,      Admin.class));

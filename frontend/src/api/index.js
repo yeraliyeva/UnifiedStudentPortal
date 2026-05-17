@@ -3,10 +3,11 @@ import { get, post, del, put } from "./client.js";
 export const login  = (username, password) => post("/login",  { username, password });
 export const logout = ()                   => post("/logout");
 
-export const listUsers    = ()         => get(`/users`);
-export const getUser      = (username) => get(`/users/${username}`);
-export const createStudent = (data)    => post("/users/students", data);
-export const deleteUser   = (username) => del(`/users/${username}`);
+export const listUsers     = ()         => get(`/users`);
+export const userDirectory = ()         => get("/users/directory");
+export const getUser       = (username) => get(`/users/${username}`);
+export const createStudent = (data)     => post("/users/students", data);
+export const deleteUser    = (username) => del(`/users/${username}`);
 export const getLogs      = ()         => get("/logs");
 export const getReport    = ()         => get("/reports/academic");
 

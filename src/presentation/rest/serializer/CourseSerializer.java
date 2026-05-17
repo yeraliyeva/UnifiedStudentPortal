@@ -39,13 +39,15 @@ public final class CourseSerializer {
 
     public static JsonValue gradeToJson(Username student, Grade grade) {
         return JsonObjectBuilder.create()
-                .put("student",    student.value())
-                .put("firstHalf",  grade.firstHalf())
-                .put("secondHalf", grade.secondHalf())
-                .put("exam",       grade.exam())
-                .put("total",      grade.total())
-                .put("letter",     grade.letter())
-                .put("passing",    grade.isPassing())
+                .put("student",          student.value())
+                .put("firstHalf",        grade.firstHalf())
+                .put("secondHalf",       grade.secondHalf())
+                .put("exam",             grade.exam())
+                .put("attestationTotal", grade.attestationTotal())
+                .put("total",            grade.total())
+                .put("letter",           grade.letter())
+                .put("admittedToExam",   grade.isAdmittedToExam())
+                .put("passing",          grade.isPassing())
                 .build();
     }
 

@@ -120,7 +120,14 @@ export function Gradebook() {
                             {user?.fullName || g.student}
                             {user?.fullName && <span className="text-muted text-sm"> @{g.student}</span>}
                           </td>
-                          <td>{g.firstHalf}</td><td>{g.secondHalf}</td><td>{g.exam}</td><td>{g.total}</td>
+                          <td>{g.firstHalf}</td>
+                          <td>{g.secondHalf}</td>
+                          <td>
+                            {g.admittedToExam === false
+                              ? <span className="badge badge-red" title={t("ui.not_admitted_hint")}>—</span>
+                              : g.exam}
+                          </td>
+                          <td>{g.total}</td>
                           <td><Badge label={g.letter} /></td>
                           <td><Badge tone={g.passing ? "PASSING" : "FAILING"} label={t(g.passing ? "PASSING" : "FAILING")} /></td>
                         </tr>

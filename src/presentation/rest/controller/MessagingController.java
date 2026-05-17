@@ -185,15 +185,19 @@ public final class MessagingController {
         return resultToResponse(result);
     }
 
-    private static JsonValue messageToJson(Message m) {
-        return JsonObjectBuilder.create()
-                .put("id",       m.id())
-                .put("sender",   m.sender().value())
-                .put("subject",  m.subject())
-                .put("urgency",  m.urgency().name())
-                .put("status",   m.status().name())
-                .put("sentAt",   m.sentAt().toString())
-                .build();
+    private JsonValue messageToJson(Message m) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
+                .put("id",        m.id())
+                .put("sender",    m.sender().value())
+                .put("recipient", m.recipient().value())
+                .put("subject",   m.subject())
+                .put("body",      m.body())
+                .put("urgency",   m.urgency().name())
+                .put("status",    m.status().name())
+                .put("sentAt",    m.sentAt().toString());
+        ctx.userRepository.findByUsername(m.sender())
+                .ifPresent(u -> b.put("senderFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
     private JsonValue newsToJson(News n) {
@@ -236,13 +240,21 @@ public final class MessagingController {
         return b.build();
     }
 
-    private static JsonValue orderToJson(Order o) {
-        return JsonObjectBuilder.create()
+    private JsonValue orderToJson(Order o) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
                 .put("id",          o.id())
                 .put("requester",   o.requester().value())
                 .put("description", o.description())
                 .put("status",      o.status().name())
-                .build();
+                .put("createdAt",   o.createdAt().toString());
+        ctx.userRepository.findByUsername(o.requester())
+                .ifPresent(u -> b.put("requesterFullName", u.name().first() + " " + u.name().last()));
+        o.executor().ifPresent(ex -> {
+            b.put("executor", ex.value());
+            ctx.userRepository.findByUsername(ex)
+                    .ifPresent(u -> b.put("executorFullName", u.name().first() + " " + u.name().last()));
+        });
+        return b.build();
     }
 
     private static HttpResponse resultToResponse(Result result) {

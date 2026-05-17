@@ -53,7 +53,10 @@ export function Orders() {
                   <tr key={o.id}>
                     <td className="fw-600">{t(o.deviceType)}</td>
                     <td className="text-muted">{o.description}</td>
-                    <td>{o.requester}</td>
+                    <td>
+                      {o.requesterFullName || o.requester}
+                      {o.requesterFullName && <span className="text-muted text-sm"> @{o.requester}</span>}
+                    </td>
                     <td><Badge label={t(o.status)} /></td>
                     <td>
                       <div style={{ display:"flex", gap:6 }}>

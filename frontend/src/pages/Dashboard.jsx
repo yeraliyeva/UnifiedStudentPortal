@@ -70,7 +70,10 @@ export function Dashboard() {
                 <span className="fw-600" style={{ fontSize:13 }}>{m.subject}</span>
                 <Badge label={t(m.urgency)} />
               </div>
-              <p className="text-muted text-sm mt-1">{t("ui.from_1")} {m.sender}</p>
+              <p className="text-muted text-sm mt-1">
+                {t("ui.from_1")} {m.senderFullName || m.sender}
+                {m.senderFullName && <> <span className="text-muted">@{m.sender}</span></>}
+              </p>
             </div>
           ))}
         </div>

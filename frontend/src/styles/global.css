@@ -161,6 +161,13 @@ input, select, textarea { font-family: inherit; }
 .btn-danger   { background: var(--danger); color: #fff; }
 .btn-success  { background: var(--success); color: #fff; }
 .btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-link {
+  background: none;
+  color: var(--accent);
+  padding: 4px 0;
+  font-weight: 500;
+}
+.btn-link:hover { color: var(--accent-hover); text-decoration: underline; }
 
 /* ── Forms ───────────────────────────────────────────────────── */
 .form-group { margin-bottom: 20px; }

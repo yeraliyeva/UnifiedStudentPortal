@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import { useI18n } from "../context/I18nContext.jsx";
 import { Badge } from "../components/Badge.jsx";
 import { Modal } from "../components/Modal.jsx";
@@ -6,6 +7,7 @@ import { useToast } from "../components/Toast.jsx";
 import * as api from "../api/index.js";
 
 export function Gradebook() {
+  const { auth } = useAuth();
   const { toast, Toasts } = useToast();
   const { t } = useI18n();
   const [courses, setCourses] = useState([]);
@@ -13,9 +15,28 @@ export function Gradebook() {
   const [grades, setGrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
   const [form, setForm] = useState({ studentUsername:"", firstHalf:0, secondHalf:0, exam:0 });
 
   useEffect(() => { api.listCourses().then(setCourses).finally(() => setLoading(false)); }, []);
+
+  const myCourses = useMemo(() => {
+    if (auth?.role === "Dean") return courses;
+    return courses.filter(c => Array.isArray(c.teachers) && c.teachers.includes(auth?.username));
+  }, [courses, auth]);
+
+  const filteredCourses = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return myCourses;
+    return myCourses.filter(c =>
+      c.name?.toLowerCase().includes(q) || c.id?.toLowerCase().includes(q)
+    );
+  }, [myCourses, search]);
+
+  const selectedCourse = useMemo(
+    () => myCourses.find(c => c.id === selected),
+    [myCourses, selected]
+  );
 
   async function loadGrades(id) {
     setSelected(id);
@@ -43,15 +64,29 @@ export function Gradebook() {
       <Toasts />
       <div className="page-header"><h1>{t("teacher.menu.put_marks")}</h1><p>{t("ui.select_a_course_to_view_or_enter_grades")}</p></div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"220px 1fr", gap:20 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"260px 1fr", gap:20 }}>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-          {courses.map(c => (
+          <input
+            className="form-control"
+            placeholder={t("ui.search_courses")}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {filteredCourses.map(c => (
             <button key={c.id}
               className={`nav-link${selected === c.id ? " active" : ""}`}
               onClick={() => loadGrades(c.id)}>
               <span>{c.name}</span>
+              <small className="text-muted" style={{ display:"block", fontSize:11, marginTop:2 }}>
+                {c.id} · {c.students?.length ?? 0} {t("ui.students").toLowerCase()}
+              </small>
             </button>
           ))}
+          {filteredCourses.length === 0 && (
+            <div className="text-muted text-sm" style={{ padding:"12px" }}>
+              {auth?.role === "Teacher" ? t("ui.no_courses_assigned") : t("course.list.empty")}
+            </div>
+          )}
         </div>
 
         <div className="card">

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useI18n } from "../context/I18nContext.jsx";
@@ -28,6 +29,22 @@ export function Sidebar() {
   const { auth, signOut } = useAuth();
   const { language, changeLanguage, t } = useI18n();
   const navigate = useNavigate();
+  const [badges, setBadges] = useState({});
+
+  useEffect(() => {
+    if (!auth) return;
+    const tasks = [
+      api.inbox().then(rows =>
+        ({ "/messages": rows.filter(m => m.status === "UNREAD").length })
+      ).catch(() => ({})),
+      api.listRequests().then(rows =>
+        ({ "/requests": rows.filter(r => r.status === "PENDING").length })
+      ).catch(() => ({})),
+    ];
+    Promise.all(tasks).then(parts =>
+      setBadges(parts.reduce((acc, p) => ({ ...acc, ...p }), {}))
+    );
+  }, [auth]);
 
   async function handleLogout() {
     try { await api.logout(); } catch (_) {}
@@ -73,6 +90,7 @@ export function Sidebar() {
              }
           }
           
+          const badgeCount = badges[item.to];
           return (
             <NavLink
               key={item.to}
@@ -81,7 +99,8 @@ export function Sidebar() {
               className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
             >
               <span className="nav-icon">{item.icon}</span>
-              {displayLabel}
+              <span style={{ flex: 1 }}>{displayLabel}</span>
+              {badgeCount > 0 && <span className="nav-badge">{badgeCount}</span>}
             </NavLink>
           );
         })}

@@ -153,11 +153,14 @@ public final class MessagingController {
     }
 
 
-    /** GET /api/orders */
+    /** GET /api/orders — requesters see their own; TechSupport sees the full queue. */
     public HttpResponse listOrders(HttpRequest request) {
-        List<Order> all = ctx.orderRepository.findAll();
+        User user = RequestContext.current();
+        List<Order> visible = user instanceof domain.user.TechSupport
+                ? ctx.orderRepository.findAll()
+                : ctx.orderRepository.findByRequester(user.username());
         List<JsonValue> arr = new ArrayList<>();
-        for (Order o : all) arr.add(orderToJson(o));
+        for (Order o : visible) arr.add(orderToJson(o));
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
     }
 

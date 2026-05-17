@@ -5,6 +5,7 @@ import bootstrap.AppContext;
 import domain.enums.HelpType;
 import domain.enums.RequestStatus;
 import domain.enums.UrgencyLevel;
+import domain.messaging.Comment;
 import domain.messaging.Message;
 import domain.messaging.News;
 import domain.messaging.Order;
@@ -195,14 +196,28 @@ public final class MessagingController {
                 .build();
     }
 
-    private static JsonValue newsToJson(News n) {
-        return JsonObjectBuilder.create()
-                .put("id",     n.id())
-                .put("title",  n.title())
-                .put("body",   n.body())
-                .put("author", n.author().value())
-                .put("pinned", n.isPinned())
-                .build();
+    private JsonValue newsToJson(News n) {
+        List<JsonValue> commentsJson = new ArrayList<>();
+        for (Comment c : n.comments()) {
+            JsonObjectBuilder cb = JsonObjectBuilder.create()
+                    .put("author",   c.author().value())
+                    .put("text",     c.text())
+                    .put("postedAt", c.postedAt().toString());
+            ctx.userRepository.findByUsername(c.author())
+                    .ifPresent(u -> cb.put("authorFullName", u.name().first() + " " + u.name().last()));
+            commentsJson.add(cb.build());
+        }
+        JsonObjectBuilder b = JsonObjectBuilder.create()
+                .put("id",          n.id())
+                .put("title",       n.title())
+                .put("body",        n.body())
+                .put("author",      n.author().value())
+                .put("publishedAt", n.publishedAt().toString())
+                .put("pinned",      n.isPinned())
+                .putObjects("comments", commentsJson);
+        ctx.userRepository.findByUsername(n.author())
+                .ifPresent(u -> b.put("authorFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
     private JsonValue requestToJson(Request r) {

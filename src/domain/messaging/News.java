@@ -13,7 +13,7 @@ public final class News implements Comparable<News> {
     private String body;
     private final Username author;
     private final LocalDateTime publishedAt;
-    private final List<String> comments = new ArrayList<>();
+    private final List<Comment> comments = new ArrayList<>();
     private boolean pinned;
 
     public News(int id, String title, String body, Username author) {
@@ -30,11 +30,11 @@ public final class News implements Comparable<News> {
     public String body() { return body; }
     public Username author() { return author; }
     public LocalDateTime publishedAt() { return publishedAt; }
-    public List<String> comments() { return Collections.unmodifiableList(comments); }
+    public List<Comment> comments() { return Collections.unmodifiableList(comments); }
     public boolean isPinned() { return pinned; }
 
     public void edit(String newTitle, String newBody) { this.title = newTitle; this.body = newBody; }
-    public void addComment(String comment) { comments.add(comment); }
+    public void addComment(Comment comment) { comments.add(comment); }
 
     @Override public int compareTo(News o) {
         if (this.pinned != o.pinned) return this.pinned ? -1 : 1;

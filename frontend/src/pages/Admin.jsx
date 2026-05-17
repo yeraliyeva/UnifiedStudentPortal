@@ -12,7 +12,10 @@ export function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ username:"", password:"", firstName:"", lastName:"", faculty:"SITE" });
+  const [form, setForm] = useState({
+    username:"", password:"", firstName:"", lastName:"",
+    email:"", faculty:"SITE", degreeType:"BACHELOR", studyYear:1,
+  });
 
   const load = () => api.listUsers().then(setUsers).finally(() => setLoading(false));
   useEffect(() => { load(); }, []);
@@ -87,9 +90,22 @@ export function AdminUsers() {
               <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.last_name")}</label>
                 <input className="form-control" value={form.lastName} onChange={e => setForm({...form,lastName:e.target.value})} /></div>
             </div>
-            <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.faculty")}</label>
-              <select className="form-control" value={form.faculty} onChange={e => setForm({...form,faculty:e.target.value})}>
-                <option>SITE</option><option>BS</option><option>ISEA</option><option>SE</option><option>SAM</option><option>LAW</option>
+            <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.email")}</label>
+              <input className="form-control" type="email" required value={form.email}
+                     onChange={e => setForm({...form,email:e.target.value})} /></div>
+            <div className="form-row">
+              <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.faculty")}</label>
+                <select className="form-control" value={form.faculty} onChange={e => setForm({...form,faculty:e.target.value})}>
+                  {["SITE","SEOGI","SG","KMA","ISE","BS"].map(f => <option key={f}>{f}</option>)}
+                </select></div>
+              <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.year")}</label>
+                <input className="form-control" type="number" min="1" max="6" value={form.studyYear}
+                       onChange={e => setForm({...form,studyYear:+e.target.value})} /></div>
+            </div>
+            <div className="form-group" style={{ marginBottom:0 }}><label>{t("ui.degree")}</label>
+              <select className="form-control" value={form.degreeType}
+                      onChange={e => setForm({...form,degreeType:e.target.value})}>
+                {["BACHELOR","MASTER","DOCTORATE"].map(d => <option key={d} value={d}>{t(d)}</option>)}
               </select></div>
           </form>
         </Modal>

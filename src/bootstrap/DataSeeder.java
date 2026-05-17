@@ -9,8 +9,13 @@ import domain.enums.Faculty;
 import domain.enums.Gender;
 import domain.enums.ManagerPosition;
 import domain.enums.TeacherPosition;
+import domain.enums.HelpType;
+import domain.enums.UrgencyLevel;
 import domain.library.Book;
 import domain.library.BookId;
+import domain.messaging.Comment;
+import domain.messaging.News;
+import domain.messaging.Request;
 import domain.shared.Credits;
 import domain.shared.Email;
 import domain.shared.Money;
@@ -42,6 +47,8 @@ public final class DataSeeder {
         seedLibrarian();
         seedCourses();
         seedBooks();
+        seedNews();
+        seedRequests();
     }
 
     private void seedAdmin() {
@@ -135,5 +142,41 @@ public final class DataSeeder {
     private void seedBooks() {
         ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Clean Code", "Robert Martin"));
         ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Effective Java", "Joshua Bloch"));
+        ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Design Patterns", "Gang of Four"));
+    }
+
+    private void seedNews() {
+        News welcome = new News(ctx.newsIds.next(),
+                "Welcome to the new semester",
+                "Classes start Monday. Office hours are posted on each course page. "
+                        + "Library hours have been extended through finals.",
+                new Username("dave"), true);
+        welcome.addComment(Comment.now(new Username("eve"), "Thanks! Looking forward to OOP."));
+        welcome.addComment(Comment.now(new Username("bob"), "Office hours Tue/Thu 14:00-16:00 in room 305."));
+        ctx.newsRepository.save(welcome);
+
+        News room = new News(ctx.newsIds.next(),
+                "Room 305 has moved to 401",
+                "Effective immediately, all classes scheduled in room 305 have been relocated to room 401.",
+                new Username("dean"), false);
+        ctx.newsRepository.save(room);
+    }
+
+    private void seedRequests() {
+        Request leo = new Request(ctx.requestIds.next(), new Username("leo"),
+                "Transcript for visa application",
+                HelpType.TRANSCRIPT_FOR_YEAR,
+                Faculty.SITE,
+                UrgencyLevel.HIGH,
+                "Need an official year transcript by Friday for the embassy.");
+        ctx.requestRepository.save(leo);
+
+        Request mia = new Request(ctx.requestIds.next(), new Username("mia"),
+                "Diploma topic coordination",
+                HelpType.COORDINATION_OF_DIPLOMA_TOPIC,
+                Faculty.SITE,
+                UrgencyLevel.MEDIUM,
+                "Would like to discuss the proposed topic with my supervisor.");
+        ctx.requestRepository.save(mia);
     }
 }

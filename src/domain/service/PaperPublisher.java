@@ -53,7 +53,8 @@ public final class PaperPublisher {
         News announcement = new News(newsId.getAndIncrement(),
                 "Research: New paper published in " + paper.journal(),
                 "\"" + paper.title() + "\" by " + paper.author() + " has been published in " + paper.journal() + ".",
-                paper.author());
+                paper.author(),
+                true);
         news.save(announcement);
     }
 }

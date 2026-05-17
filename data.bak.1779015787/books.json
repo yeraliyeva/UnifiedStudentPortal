@@ -1,0 +1,16 @@
+[
+  {
+    "_id": "1",
+    "id": 1,
+    "title": "Clean Code",
+    "author": "Robert Martin",
+    "borrower": "eve"
+  },
+  {
+    "_id": "2",
+    "id": 2,
+    "title": "Effective Java",
+    "author": "Joshua Bloch",
+    "borrower": "bob"
+  }
+]

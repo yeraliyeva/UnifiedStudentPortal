@@ -18,8 +18,8 @@ public final class PublishNews {
         this.logger = logger;
     }
 
-    public Result execute(Username author, String title, String body) {
-        News n = new News(ids.next(), title, body, author);
+    public Result execute(Username author, String title, String body, boolean pinned) {
+        News n = new News(ids.next(), title, body, author, pinned);
         news.save(n);
         logger.log(author, "Published news: " + title);
         return Result.ok("News published.");

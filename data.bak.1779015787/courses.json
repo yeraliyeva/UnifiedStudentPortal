@@ -1,0 +1,32 @@
+[
+  {
+    "_id": "CRS-2",
+    "courseId": "CRS-2",
+    "name": "OOP",
+    "credits": 5,
+    "type": "MAJOR",
+    "maxStudents": 30,
+    "teachers": [],
+    "students": [],
+    "prerequisites": [
+      "CRS-1"
+    ],
+    "lessons": [],
+    "grades": []
+  },
+  {
+    "_id": "CRS-1",
+    "courseId": "CRS-1",
+    "name": "Math",
+    "credits": 5,
+    "type": "MAJOR",
+    "maxStudents": 50,
+    "teachers": [],
+    "students": [
+      "eve"
+    ],
+    "prerequisites": [],
+    "lessons": [],
+    "grades": []
+  }
+]

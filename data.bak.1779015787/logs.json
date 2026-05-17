@@ -1,0 +1,200 @@
+[
+  {
+    "_id": "eve|2026-05-10T19:33:00.358612|6a06dd23-3a80-34d9-ab43-2ba5fe646ace",
+    "at": "2026-05-10T19:33:00.358612",
+    "actor": "eve",
+    "action": "Borrowed book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:10.344059|6bcb0e5e-2853-37cf-9998-7481d5939d47",
+    "at": "2026-05-10T19:33:10.344059",
+    "actor": "eve",
+    "action": "Returned book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:13.687872|6a06dd23-3a80-34d9-ab43-2ba5fe646ace",
+    "at": "2026-05-10T19:33:13.687872",
+    "actor": "eve",
+    "action": "Borrowed book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:16.406200|6bcb0e5e-2853-37cf-9998-7481d5939d47",
+    "at": "2026-05-10T19:33:16.406200",
+    "actor": "eve",
+    "action": "Returned book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:17.271879|fb717c32-2269-3d7d-9fef-07d136855fa6",
+    "at": "2026-05-10T19:33:17.271879",
+    "actor": "eve",
+    "action": "Borrowed book: Effective Java"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:18.466519|70d87f85-c2f5-3481-9e91-df450dc9a0e0",
+    "at": "2026-05-10T19:33:18.466519",
+    "actor": "eve",
+    "action": "Returned book: Effective Java"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:31.695797|11f7226f-68a1-3b57-b0d2-d4e2ea598817",
+    "at": "2026-05-10T19:33:31.695797",
+    "actor": "eve",
+    "action": "Enrolled in course: Math"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:34.098179|6e1bd850-f652-3c63-8600-a3900a918c41",
+    "at": "2026-05-10T19:33:34.098179",
+    "actor": "eve",
+    "action": "Enrollment denied: Already enrolled in Math"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:35.048379|6e1bd850-f652-3c63-8600-a3900a918c41",
+    "at": "2026-05-10T19:33:35.048379",
+    "actor": "eve",
+    "action": "Enrollment denied: Already enrolled in Math"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:36.312378|f0d49f45-d044-3243-842d-12f620a8fffa",
+    "at": "2026-05-10T19:33:36.312378",
+    "actor": "eve",
+    "action": "Enrollment denied: Missing prerequisite: Math"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:37.053695|f0d49f45-d044-3243-842d-12f620a8fffa",
+    "at": "2026-05-10T19:33:37.053695",
+    "actor": "eve",
+    "action": "Enrollment denied: Missing prerequisite: Math"
+  },
+  {
+    "_id": "eve|2026-05-10T19:33:43.857469|f0d49f45-d044-3243-842d-12f620a8fffa",
+    "at": "2026-05-10T19:33:43.857469",
+    "actor": "eve",
+    "action": "Enrollment denied: Missing prerequisite: Math"
+  },
+  {
+    "_id": "admin|2026-05-11T12:07:26.611588|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-11T12:07:26.611588",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "admin|2026-05-11T12:07:26.618484|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-11T12:07:26.618484",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "admin|2026-05-11T12:08:36.302873|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-11T12:08:36.302873",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "admin|2026-05-11T12:08:36.309117|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-11T12:08:36.309117",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "eve|2026-05-17T13:58:43.549620|2e2fad6f-7b63-312e-9766-4cd93d691142",
+    "at": "2026-05-17T13:58:43.549620",
+    "actor": "eve",
+    "action": "Sent message to bob"
+  },
+  {
+    "_id": "eve|2026-05-17T14:01:15.933823|6a06dd23-3a80-34d9-ab43-2ba5fe646ace",
+    "at": "2026-05-17T14:01:15.933823",
+    "actor": "eve",
+    "action": "Borrowed book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-17T14:01:22.312489|6bcb0e5e-2853-37cf-9998-7481d5939d47",
+    "at": "2026-05-17T14:01:22.312489",
+    "actor": "eve",
+    "action": "Returned book: Clean Code"
+  },
+  {
+    "_id": "eve|2026-05-17T14:01:27.633665|6a06dd23-3a80-34d9-ab43-2ba5fe646ace",
+    "at": "2026-05-17T14:01:27.633665",
+    "actor": "eve",
+    "action": "Borrowed book: Clean Code"
+  },
+  {
+    "_id": "bob|2026-05-17T14:02:17.780555|fb717c32-2269-3d7d-9fef-07d136855fa6",
+    "at": "2026-05-17T14:02:17.780555",
+    "actor": "bob",
+    "action": "Borrowed book: Effective Java"
+  },
+  {
+    "_id": "bob|2026-05-17T14:03:10.857540|7b2b6f8d-0a8c-32dd-8f28-c95ccad14edc",
+    "at": "2026-05-17T14:03:10.857540",
+    "actor": "bob",
+    "action": "Created IT order: ffff"
+  },
+  {
+    "_id": "bob|2026-05-17T14:05:38.367425|a2b26c1e-8dcd-3575-b67b-103998a2fecb",
+    "at": "2026-05-17T14:05:38.367425",
+    "actor": "bob",
+    "action": "Published news: aaaa"
+  },
+  {
+    "_id": "eve|2026-05-17T14:05:49.974451|f0a3886d-8b8e-33bb-a036-98702bf201ba",
+    "at": "2026-05-17T14:05:49.974451",
+    "actor": "eve",
+    "action": "Commented on news #1"
+  },
+  {
+    "_id": "bob|2026-05-17T14:06:08.510577|f0a3886d-8b8e-33bb-a036-98702bf201ba",
+    "at": "2026-05-17T14:06:08.510577",
+    "actor": "bob",
+    "action": "Commented on news #1"
+  },
+  {
+    "_id": "bob|2026-05-17T14:06:14.179612|f0a3886d-8b8e-33bb-a036-98702bf201ba",
+    "at": "2026-05-17T14:06:14.179612",
+    "actor": "bob",
+    "action": "Commented on news #1"
+  },
+  {
+    "_id": "bob|2026-05-17T14:08:49.286471|a75896fa-fb0a-3a75-ab1c-eb7a1d0c5509",
+    "at": "2026-05-17T14:08:49.286471",
+    "actor": "bob",
+    "action": "Created IT order: fsafdsa"
+  },
+  {
+    "_id": "admin|2026-05-17T14:10:51.690593|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-17T14:10:51.690593",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "admin|2026-05-17T14:10:51.694043|f6ce5986-c534-331e-82fa-d1547e08d3ae",
+    "at": "2026-05-17T14:10:51.694043",
+    "actor": "admin",
+    "action": "Generated academic report"
+  },
+  {
+    "_id": "eve|2026-05-17T15:56:17.870292|925bd0a7-8e97-3271-bef2-5eee3f9baabd",
+    "at": "2026-05-17T15:56:17.870292",
+    "actor": "eve",
+    "action": "Submitted request: TRANSCRIPT_FOR_SEMESTER — Need transcript for Q4"
+  },
+  {
+    "_id": "dave|2026-05-17T15:56:59.340722|f5678614-1bf5-3904-a504-eb063f3947d2",
+    "at": "2026-05-17T15:56:59.340722",
+    "actor": "dave",
+    "action": "Processed request #1 -> APPROVED"
+  },
+  {
+    "_id": "eve|2026-05-17T15:57:32.209575|2e2fad6f-7b63-312e-9766-4cd93d691142",
+    "at": "2026-05-17T15:57:32.209575",
+    "actor": "eve",
+    "action": "Sent message to bob"
+  },
+  {
+    "_id": "eve|2026-05-17T15:58:08.036244|f0a3886d-8b8e-33bb-a036-98702bf201ba",
+    "at": "2026-05-17T15:58:08.036244",
+    "actor": "eve",
+    "action": "Commented on news #1"
+  }
+]

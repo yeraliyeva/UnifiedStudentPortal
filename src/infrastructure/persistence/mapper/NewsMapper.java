@@ -32,6 +32,7 @@ public final class NewsMapper implements EntityMapper<News, Integer> {
                 .put("title", n.title())
                 .put("body", n.body())
                 .put("author", n.author().value())
+                .put("pinned", n.isPinned())
                 .putObjects("comments", commentsJson)
                 .build();
     }
@@ -41,7 +42,8 @@ public final class NewsMapper implements EntityMapper<News, Integer> {
         News n = new News(MapperHelpers.readInt(o, "id"),
                 MapperHelpers.readString(o, "title"),
                 MapperHelpers.readString(o, "body"),
-                new Username(MapperHelpers.readString(o, "author")));
+                new Username(MapperHelpers.readString(o, "author")),
+                MapperHelpers.readBoolOr(o, "pinned", false));
         JsonValue raw = o.fields().get("comments");
         if (raw instanceof JsonValue.JsonArray arr) {
             for (JsonValue item : arr.items()) {

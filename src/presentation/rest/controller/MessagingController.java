@@ -77,8 +77,9 @@ public final class MessagingController {
         JsonValue.JsonObject body = request.body();
         String title   = str(body, "title");
         String content = str(body, "body");
+        boolean pinned = boolVal(body, "pinned");
         if (title.isBlank()) return HttpResponse.badRequest("'title' is required.");
-        Result result = ctx.publishNews.execute(author.username(), title, content);
+        Result result = ctx.publishNews.execute(author.username(), title, content, pinned);
         return resultToResponse(result);
     }
 

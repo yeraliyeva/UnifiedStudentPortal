@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const I18nContext = createContext();
-const CACHE_VERSION = 'v2';
 
 export const I18nProvider = ({ children }) => {
     const [messages, setMessages] = useState({});
@@ -9,47 +8,23 @@ export const I18nProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchMessages = async () => {
-            const cacheKey = `i18n_${CACHE_VERSION}_${language}`;
-            const cached = localStorage.getItem(cacheKey);
-            
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    // Cache for 24 hours (86400000 ms)
-                    if (Date.now() - parsed.timestamp < 86400000) {
-                        setMessages(parsed.data);
-                        setLoading(false);
-                        return; // Use cached data, no network request!
-                    }
-                } catch (e) {
-                    console.warn("Invalid i18n cache", e);
-                }
-            }
+        Object.keys(localStorage)
+            .filter(k => k.startsWith('i18n_'))
+            .forEach(k => localStorage.removeItem(k));
+    }, []);
 
-            setLoading(true);
-            try {
-                const response = await fetch('http://localhost:8080/api/system/messages', {
-                    headers: { 'Accept-Language': language }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setMessages(data);
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        timestamp: Date.now(),
-                        data: data
-                    }));
-                } else {
-                    console.error('Failed to fetch messages');
-                }
-            } catch (err) {
-                console.error('Network error fetching messages:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMessages();
+    useEffect(() => {
+        let cancelled = false;
+        setLoading(true);
+        fetch('http://localhost:8080/api/system/messages', {
+            headers: { 'Accept-Language': language },
+            cache: 'no-store',
+        })
+            .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+            .then(data => { if (!cancelled) setMessages(data); })
+            .catch(err => console.error('Failed to load translations:', err))
+            .finally(() => { if (!cancelled) setLoading(false); });
+        return () => { cancelled = true; };
     }, [language]);
 
     const changeLanguage = (newLang) => {
@@ -57,21 +32,18 @@ export const I18nProvider = ({ children }) => {
         setLanguage(newLang);
     };
 
-    // Implements MessageFormat style formatting: "Hello {0}"
     const t = (key, ...args) => {
         let msg = messages[key];
-        if (!msg) return key; // Fallback to key if not found
-        
+        if (!msg) return key;
         args.forEach((arg, index) => {
             msg = msg.replace(new RegExp(`\\{${index}\\}`, 'g'), arg);
         });
-        
         return msg;
     };
 
     return (
         <I18nContext.Provider value={{ t, changeLanguage, language, loading }}>
-            {loading ? <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>Loading language...</div> : children}
+            {loading ? <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}>Loading language…</div> : children}
         </I18nContext.Provider>
     );
 };

@@ -3,13 +3,17 @@ package presentation.rest.controller;
 import application.Result;
 import bootstrap.AppContext;
 import domain.enums.HelpType;
+import domain.enums.RequestStatus;
 import domain.enums.UrgencyLevel;
+import domain.messaging.Comment;
 import domain.messaging.Message;
 import domain.messaging.News;
 import domain.messaging.Order;
 import domain.messaging.Request;
 import domain.shared.Username;
+import domain.user.Dean;
 import domain.user.Employee;
+import domain.user.Manager;
 import domain.user.User;
 import infrastructure.persistence.json.JsonObjectBuilder;
 import infrastructure.persistence.json.JsonValue;
@@ -73,8 +77,9 @@ public final class MessagingController {
         JsonValue.JsonObject body = request.body();
         String title   = str(body, "title");
         String content = str(body, "body");
+        boolean pinned = boolVal(body, "pinned");
         if (title.isBlank()) return HttpResponse.badRequest("'title' is required.");
-        Result result = ctx.publishNews.execute(author.username(), title, content);
+        Result result = ctx.publishNews.execute(author.username(), title, content, pinned);
         return resultToResponse(result);
     }
 
@@ -88,35 +93,75 @@ public final class MessagingController {
     }
 
 
-    /** GET /api/requests */
+    /** GET /api/requests — requesters see their own; Managers/Deans see all. */
     public HttpResponse listRequests(HttpRequest request) {
-        List<Request> all = ctx.requestRepository.findAll();
+        User user = RequestContext.current();
+        List<Request> visible = canProcessRequests(user)
+                ? ctx.requestRepository.findAll()
+                : ctx.requestRepository.findByRequester(user.username());
         List<JsonValue> arr = new ArrayList<>();
-        for (Request r : all) arr.add(requestToJson(r));
+        for (Request r : visible) arr.add(requestToJson(r));
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
+    }
+
+    /** PUT /api/requests/{id} — Manager/Dean only; body: {"status": "APPROVED" | "REJECTED" | ...}. */
+    public HttpResponse processRequest(HttpRequest request) {
+        User actor = RequestContext.current();
+        if (!canProcessRequests(actor)) return HttpResponse.forbidden();
+
+        int id;
+        try {
+            id = Integer.parseInt(request.pathSegment(2).orElse(""));
+        } catch (NumberFormatException e) {
+            return HttpResponse.badRequest("Invalid request id.");
+        }
+
+        String statusRaw = str(request.body(), "status");
+        try {
+            RequestStatus status = RequestStatus.valueOf(statusRaw.toUpperCase());
+            Result result = ctx.processRequest.execute(actor.username(), id, status);
+            return resultToResponse(result);
+        } catch (IllegalArgumentException e) {
+            return HttpResponse.badRequest("Invalid status. Allowed: "
+                    + java.util.Arrays.toString(RequestStatus.values()));
+        }
+    }
+
+    private static boolean canProcessRequests(User user) {
+        return user instanceof Manager || user instanceof Dean;
     }
 
     /** POST /api/requests */
     public HttpResponse submitRequest(HttpRequest request) {
         User user = RequestContext.current();
         JsonValue.JsonObject body = request.body();
+        String title = str(body, "title");
+        String info  = str(body, "body");
+        if (info.isBlank()) info = str(body, "info");
+        String urgencyRaw = str(body, "urgency");
+        if (urgencyRaw.isBlank()) urgencyRaw = "MEDIUM";
+        if (title.isBlank()) return HttpResponse.badRequest("'title' is required.");
         try {
-            HelpType    type    = HelpType.valueOf(str(body, "type").toUpperCase());
-            UrgencyLevel urgency = UrgencyLevel.valueOf(str(body, "urgency").toUpperCase());
-            String info  = str(body, "info");
-            Result result = ctx.submitRequest.execute(user, type, urgency, info);
+            HelpType     type    = HelpType.valueOf(str(body, "type").toUpperCase());
+            UrgencyLevel urgency = UrgencyLevel.valueOf(urgencyRaw.toUpperCase());
+            Result result = ctx.submitRequest.execute(user, title, type, urgency, info);
             return resultToResponse(result);
         } catch (IllegalArgumentException e) {
-            return HttpResponse.badRequest("Invalid type or urgency: " + e.getMessage());
+            return HttpResponse.badRequest("Invalid type or urgency. Allowed types: "
+                    + java.util.Arrays.toString(HelpType.values())
+                    + "; urgency: LOW, MEDIUM, HIGH.");
         }
     }
 
 
-    /** GET /api/orders */
+    /** GET /api/orders — requesters see their own; TechSupport sees the full queue. */
     public HttpResponse listOrders(HttpRequest request) {
-        List<Order> all = ctx.orderRepository.findAll();
+        User user = RequestContext.current();
+        List<Order> visible = user instanceof domain.user.TechSupport
+                ? ctx.orderRepository.findAll()
+                : ctx.orderRepository.findByRequester(user.username());
         List<JsonValue> arr = new ArrayList<>();
-        for (Order o : all) arr.add(orderToJson(o));
+        for (Order o : visible) arr.add(orderToJson(o));
         return HttpResponse.ok(new JsonValue.JsonArray(arr));
     }
 
@@ -144,44 +189,76 @@ public final class MessagingController {
         return resultToResponse(result);
     }
 
-    private static JsonValue messageToJson(Message m) {
-        return JsonObjectBuilder.create()
-                .put("id",       m.id())
-                .put("sender",   m.sender().value())
-                .put("subject",  m.subject())
-                .put("urgency",  m.urgency().name())
-                .put("status",   m.status().name())
-                .put("sentAt",   m.sentAt().toString())
-                .build();
+    private JsonValue messageToJson(Message m) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
+                .put("id",        m.id())
+                .put("sender",    m.sender().value())
+                .put("recipient", m.recipient().value())
+                .put("subject",   m.subject())
+                .put("body",      m.body())
+                .put("urgency",   m.urgency().name())
+                .put("status",    m.status().name())
+                .put("sentAt",    m.sentAt().toString());
+        ctx.userRepository.findByUsername(m.sender())
+                .ifPresent(u -> b.put("senderFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
-    private static JsonValue newsToJson(News n) {
-        return JsonObjectBuilder.create()
-                .put("id",     n.id())
-                .put("title",  n.title())
-                .put("body",   n.body())
-                .put("author", n.author().value())
-                .put("pinned", n.isPinned())
-                .build();
+    private JsonValue newsToJson(News n) {
+        List<JsonValue> commentsJson = new ArrayList<>();
+        for (Comment c : n.comments()) {
+            JsonObjectBuilder cb = JsonObjectBuilder.create()
+                    .put("author",   c.author().value())
+                    .put("text",     c.text())
+                    .put("postedAt", c.postedAt().toString());
+            ctx.userRepository.findByUsername(c.author())
+                    .ifPresent(u -> cb.put("authorFullName", u.name().first() + " " + u.name().last()));
+            commentsJson.add(cb.build());
+        }
+        JsonObjectBuilder b = JsonObjectBuilder.create()
+                .put("id",          n.id())
+                .put("title",       n.title())
+                .put("body",        n.body())
+                .put("author",      n.author().value())
+                .put("publishedAt", n.publishedAt().toString())
+                .put("pinned",      n.isPinned())
+                .putObjects("comments", commentsJson);
+        ctx.userRepository.findByUsername(n.author())
+                .ifPresent(u -> b.put("authorFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
-    private static JsonValue requestToJson(Request r) {
-        return JsonObjectBuilder.create()
+    private JsonValue requestToJson(Request r) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
                 .put("id",        r.id())
                 .put("requester", r.requester().value())
+                .put("title",     r.title())
                 .put("type",      r.type().name())
+                .put("faculty",   r.faculty().name())
                 .put("urgency",   r.urgency().name())
-                .put("status",    r.status().name())
-                .build();
+                .put("body",      r.additionalInfo())
+                .put("createdAt", r.createdAt().toString())
+                .put("status",    r.status().name());
+        ctx.userRepository.findByUsername(r.requester())
+                .ifPresent(u -> b.put("requesterFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
     }
 
-    private static JsonValue orderToJson(Order o) {
-        return JsonObjectBuilder.create()
+    private JsonValue orderToJson(Order o) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
                 .put("id",          o.id())
                 .put("requester",   o.requester().value())
                 .put("description", o.description())
                 .put("status",      o.status().name())
-                .build();
+                .put("createdAt",   o.createdAt().toString());
+        ctx.userRepository.findByUsername(o.requester())
+                .ifPresent(u -> b.put("requesterFullName", u.name().first() + " " + u.name().last()));
+        o.executor().ifPresent(ex -> {
+            b.put("executor", ex.value());
+            ctx.userRepository.findByUsername(ex)
+                    .ifPresent(u -> b.put("executorFullName", u.name().first() + " " + u.name().last()));
+        });
+        return b.build();
     }
 
     private static HttpResponse resultToResponse(Result result) {

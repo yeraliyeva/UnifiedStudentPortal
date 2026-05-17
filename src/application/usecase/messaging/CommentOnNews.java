@@ -1,6 +1,7 @@
 package application.usecase.messaging;
 
 import application.Result;
+import domain.messaging.Comment;
 import domain.messaging.News;
 import domain.repository.NewsRepository;
 import domain.user.User;
@@ -15,10 +16,11 @@ public final class CommentOnNews {
         this.logger = logger;
     }
 
-    public Result execute(User user, int newsId, String comment) {
+    public Result execute(User user, int newsId, String text) {
+        if (text == null || text.isBlank()) return Result.fail("Comment cannot be empty.");
         News n = news.findById(newsId).orElse(null);
         if (n == null) return Result.fail("News not found.");
-        n.addComment(user.username() + ": " + comment);
+        n.addComment(Comment.now(user.username(), text));
         news.save(n);
         logger.log(user.username(), "Commented on news #" + newsId);
         return Result.ok("Comment added.");

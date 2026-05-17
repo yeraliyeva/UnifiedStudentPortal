@@ -2,6 +2,7 @@ package infrastructure.persistence.orm.repository;
 
 import domain.messaging.Order;
 import domain.repository.OrderRepository;
+import domain.shared.Username;
 import infrastructure.persistence.database.Database;
 import infrastructure.persistence.mapper.OrderMapper;
 import infrastructure.persistence.orm.Repository;
@@ -19,4 +20,7 @@ public final class OrmOrderRepository implements OrderRepository {
     @Override public void save(Order o) { repo.save(o); }
     @Override public Optional<Order> findById(int id) { return repo.findById(id); }
     @Override public List<Order> findAll() { return repo.findAll(); }
+    @Override public List<Order> findByRequester(Username u) {
+        return repo.whereEq("requester", u.value()).list();
+    }
 }

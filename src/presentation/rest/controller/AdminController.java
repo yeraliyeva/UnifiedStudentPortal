@@ -112,16 +112,19 @@ public final class AdminController {
         List<JsonValue> top = new ArrayList<>();
         for (var ts : report.top()) {
             top.add(JsonObjectBuilder.create()
-                    .put("student", ts.fullName())
-                    .put("gpa",     ts.gpa())
+                    .put("username", ts.username())
+                    .put("fullName", ts.fullName())
+                    .put("gpa",      ts.gpa())
                     .build());
         }
         return HttpResponse.ok(JsonObjectBuilder.create()
-                .put("totalCourses",  report.totalCourses())
-                .put("totalStudents", report.totalStudents())
-                .put("totalTeachers", report.totalTeachers())
-                .putObjects("courseRows",   rows)
-                .putObjects("topStudents",  top)
+                .put("totalCourses",    report.totalCourses())
+                .put("totalStudents",   report.totalStudents())
+                .put("totalTeachers",   report.totalTeachers())
+                .put("averageGpa",      report.averageGpa())
+                .put("failingStudents", report.failingStudents())
+                .putObjects("courseRows",  rows)
+                .putObjects("topStudents", top)
                 .build());
     }
 

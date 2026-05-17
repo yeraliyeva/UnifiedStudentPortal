@@ -29,9 +29,12 @@ public final class RestServer {
         LibraryController   library   = new LibraryController(ctx);
         MessagingController messaging = new MessagingController(ctx);
         ResearchController  research  = new ResearchController(ctx);
+        SystemController    system    = new SystemController(ctx);
 
         router.register(Route.of(HttpMethod.POST, "/api/login",  auth::login));
         router.register(Route.of(HttpMethod.POST, "/api/logout", auth::logout));
+        router.register(Route.of(HttpMethod.GET,  "/api/system/messages",  system::getMessages));
+        router.register(Route.of(HttpMethod.GET,  "/api/users/directory",  system::getDirectory, User.class));
 
         router.register(Route.of(HttpMethod.GET,    "/api/users",            admin::listUsers,    Admin.class));
         router.register(Route.of(HttpMethod.GET,    "/api/users/{username}", admin::getUser,      Admin.class));
@@ -60,9 +63,10 @@ public final class RestServer {
         router.register(Route.of(HttpMethod.GET,  "/api/news",                 messaging::listNews,     User.class));
         router.register(Route.of(HttpMethod.POST, "/api/news",                 messaging::publishNews,  Employee.class));
         router.register(Route.of(HttpMethod.POST, "/api/news/{id}/comment",    messaging::commentOnNews,User.class));
-        router.register(Route.of(HttpMethod.GET,  "/api/requests",             messaging::listRequests, User.class));
-        router.register(Route.of(HttpMethod.POST, "/api/requests",             messaging::submitRequest,User.class));
-        router.register(Route.of(HttpMethod.GET,  "/api/orders",               messaging::listOrders,   TechSupport.class));
+        router.register(Route.of(HttpMethod.GET,  "/api/requests",             messaging::listRequests,   User.class));
+        router.register(Route.of(HttpMethod.POST, "/api/requests",             messaging::submitRequest,  User.class));
+        router.register(Route.of(HttpMethod.PUT,  "/api/requests/{id}",        messaging::processRequest, User.class));
+        router.register(Route.of(HttpMethod.GET,  "/api/orders",               messaging::listOrders,   User.class));
         router.register(Route.of(HttpMethod.POST, "/api/orders",               messaging::createOrder,  User.class));
         router.register(Route.of(HttpMethod.PUT,  "/api/orders/{id}/accept",   messaging::acceptOrder,  TechSupport.class));
         router.register(Route.of(HttpMethod.PUT,  "/api/orders/{id}/complete", messaging::completeOrder,TechSupport.class));
@@ -75,6 +79,7 @@ public final class RestServer {
         router.register(Route.of(HttpMethod.POST,   "/api/projects/{journal}/join", research::joinProject,  User.class));
         router.register(Route.of(HttpMethod.POST,   "/api/subscriptions",           research::subscribe,    User.class));
         router.register(Route.of(HttpMethod.DELETE, "/api/subscriptions/{journal}", research::unsubscribe,  User.class));
+        router.register(Route.of(HttpMethod.POST,   "/api/research/become",         research::becomeResearcher, User.class));
 
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         server.createContext("/api", router);

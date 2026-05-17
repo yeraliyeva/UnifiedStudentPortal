@@ -9,18 +9,25 @@ import domain.enums.Faculty;
 import domain.enums.Gender;
 import domain.enums.ManagerPosition;
 import domain.enums.TeacherPosition;
+import domain.enums.HelpType;
+import domain.enums.UrgencyLevel;
 import domain.library.Book;
 import domain.library.BookId;
+import domain.messaging.Comment;
+import domain.messaging.News;
+import domain.messaging.Request;
 import domain.shared.Credits;
 import domain.shared.Email;
 import domain.shared.Money;
 import domain.shared.PersonName;
 import domain.shared.Username;
 import domain.user.Admin;
+import domain.user.Dean;
 import domain.user.Librarian;
 import domain.user.Manager;
 import domain.user.Student;
 import domain.user.Teacher;
+import domain.user.TechSupport;
 
 import java.time.LocalDate;
 
@@ -34,10 +41,14 @@ public final class DataSeeder {
         seedAdmin();
         seedManager();
         seedTeacher();
-        seedStudent();
+        seedDean();
+        seedTechSupport();
+        seedStudents();
         seedLibrarian();
         seedCourses();
         seedBooks();
+        seedNews();
+        seedRequests();
     }
 
     private void seedAdmin() {
@@ -61,13 +72,45 @@ public final class DataSeeder {
                 new Email("bob@uni.edu"), Faculty.SITE,
                 new Money(2500), LocalDate.of(2018, 9, 1), "INS-002", "PhD", TeacherPosition.PROFESSOR);
         ctx.userRepository.save(teacher);
+
+        Teacher alice = new Teacher(new Username("alice"), ctx.passwordHasher.hash("alice"),
+                new PersonName("Alice", "Walker"), Gender.FEMALE, LocalDate.of(1982, 2, 18),
+                new Email("alice@uni.edu"), Faculty.SITE,
+                new Money(2200), LocalDate.of(2019, 9, 1), "INS-005", "MSc", TeacherPosition.SENIOR_LECTOR);
+        ctx.userRepository.save(alice);
     }
 
-    private void seedStudent() {
-        Student stu = new Student(new Username("eve"), ctx.passwordHasher.hash("eve"),
+    private void seedDean() {
+        Dean dean = new Dean(new Username("dean"), ctx.passwordHasher.hash("dean"),
+                new PersonName("Carol", "Greene"), Gender.FEMALE, LocalDate.of(1970, 8, 1),
+                new Email("dean@uni.edu"), Faculty.SITE,
+                new Money(3500), LocalDate.of(2015, 1, 1), "INS-006", "PhD");
+        ctx.userRepository.save(dean);
+    }
+
+    private void seedTechSupport() {
+        TechSupport tech = new TechSupport(new Username("tech"), ctx.passwordHasher.hash("tech"),
+                new PersonName("Tom", "Reilly"), Gender.MALE, LocalDate.of(1992, 4, 22),
+                new Email("tech@uni.edu"), Faculty.SITE,
+                new Money(1800), LocalDate.of(2021, 6, 1), "INS-007");
+        ctx.userRepository.save(tech);
+    }
+
+    private void seedStudents() {
+        Student eve = new Student(new Username("eve"), ctx.passwordHasher.hash("eve"),
                 new PersonName("Eve", "Smith"), Gender.FEMALE, LocalDate.of(2003, 6, 15),
                 new Email("eve@uni.edu"), Faculty.SITE, DegreeType.BACHELOR, 2);
-        ctx.userRepository.save(stu);
+        ctx.userRepository.save(eve);
+
+        Student leo = new Student(new Username("leo"), ctx.passwordHasher.hash("leo"),
+                new PersonName("Leo", "Park"), Gender.MALE, LocalDate.of(2002, 3, 5),
+                new Email("leo@uni.edu"), Faculty.SITE, DegreeType.BACHELOR, 3);
+        ctx.userRepository.save(leo);
+
+        Student mia = new Student(new Username("mia"), ctx.passwordHasher.hash("mia"),
+                new PersonName("Mia", "Chen"), Gender.FEMALE, LocalDate.of(2004, 10, 30),
+                new Email("mia@uni.edu"), Faculty.SITE, DegreeType.BACHELOR, 1);
+        ctx.userRepository.save(mia);
     }
 
     private void seedLibrarian() {
@@ -82,6 +125,16 @@ public final class DataSeeder {
         Course math = new Course(CourseId.of(ctx.courseIds.next()), "Math", new Credits(5), DisciplineType.MAJOR, new Capacity(50));
         Course oop  = new Course(CourseId.of(ctx.courseIds.next()), "OOP",  new Credits(5), DisciplineType.MAJOR, new Capacity(30));
         oop.addPrerequisite(math.id());
+
+        math.assignTeacher(new Username("bob"));
+        oop.assignTeacher(new Username("bob"));
+        oop.assignTeacher(new Username("alice"));
+
+        math.enroll(new Username("eve"));
+        math.enroll(new Username("leo"));
+        oop.enroll(new Username("leo"));
+        oop.enroll(new Username("mia"));
+
         ctx.courseRepository.save(math);
         ctx.courseRepository.save(oop);
     }
@@ -89,5 +142,41 @@ public final class DataSeeder {
     private void seedBooks() {
         ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Clean Code", "Robert Martin"));
         ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Effective Java", "Joshua Bloch"));
+        ctx.bookRepository.save(new Book(new BookId(ctx.bookIds.next()), "Design Patterns", "Gang of Four"));
+    }
+
+    private void seedNews() {
+        News welcome = new News(ctx.newsIds.next(),
+                "Welcome to the new semester",
+                "Classes start Monday. Office hours are posted on each course page. "
+                        + "Library hours have been extended through finals.",
+                new Username("dave"), true);
+        welcome.addComment(Comment.now(new Username("eve"), "Thanks! Looking forward to OOP."));
+        welcome.addComment(Comment.now(new Username("bob"), "Office hours Tue/Thu 14:00-16:00 in room 305."));
+        ctx.newsRepository.save(welcome);
+
+        News room = new News(ctx.newsIds.next(),
+                "Room 305 has moved to 401",
+                "Effective immediately, all classes scheduled in room 305 have been relocated to room 401.",
+                new Username("dean"), false);
+        ctx.newsRepository.save(room);
+    }
+
+    private void seedRequests() {
+        Request leo = new Request(ctx.requestIds.next(), new Username("leo"),
+                "Transcript for visa application",
+                HelpType.TRANSCRIPT_FOR_YEAR,
+                Faculty.SITE,
+                UrgencyLevel.HIGH,
+                "Need an official year transcript by Friday for the embassy.");
+        ctx.requestRepository.save(leo);
+
+        Request mia = new Request(ctx.requestIds.next(), new Username("mia"),
+                "Diploma topic coordination",
+                HelpType.COORDINATION_OF_DIPLOMA_TOPIC,
+                Faculty.SITE,
+                UrgencyLevel.MEDIUM,
+                "Would like to discuss the proposed topic with my supervisor.");
+        ctx.requestRepository.save(mia);
     }
 }

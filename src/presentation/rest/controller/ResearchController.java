@@ -110,28 +110,47 @@ public final class ResearchController {
         return resultToResponse(result);
     }
 
-    private static JsonValue paperToJson(ResearchPaper p) {
-        return JsonObjectBuilder.create()
-                .put("id",        p.id().value())
-                .put("title",     p.title())
-                .put("author",    p.author().value())
-                .put("journal",   p.journal().value())
-                .put("pages",     p.length())
-                .put("citations", p.citations())
-                .put("doi",       p.doi())
-                .build();
+    /** POST /api/research/become */
+    public HttpResponse becomeResearcher(HttpRequest request) {
+        User user = RequestContext.current();
+        String field = str(request.body(), "field");
+        if (field.isBlank()) return HttpResponse.badRequest("Field is required.");
+        Result result = ctx.becomeResearcher.execute(user, field);
+        if (result.success()) {
+            ctx.userRepository.save(user);
+        }
+        return resultToResponse(result);
     }
 
-    private static JsonValue projectToJson(ResearchProject p) {
+    private JsonValue paperToJson(ResearchPaper p) {
+        JsonObjectBuilder b = JsonObjectBuilder.create()
+                .put("id",            p.id().value())
+                .put("title",         p.title())
+                .put("author",        p.author().value())
+                .put("journal",       p.journal().value())
+                .put("pages",         p.length())
+                .put("citations",     p.citations())
+                .put("doi",           p.doi())
+                .put("publishedDate", p.publishedDate().toString());
+        ctx.userRepository.findByUsername(p.author())
+                .ifPresent(u -> b.put("authorFullName", u.name().first() + " " + u.name().last()));
+        return b.build();
+    }
+
+    private JsonValue projectToJson(ResearchProject p) {
         List<JsonValue> participants = new ArrayList<>();
         for (Username u : p.participants()) participants.add(JsonValue.of(u.value()));
-        return JsonObjectBuilder.create()
+        JsonObjectBuilder b = JsonObjectBuilder.create()
                 .put("id",         p.id())
                 .put("topic",      p.topic())
                 .put("journal",    p.journal().value())
                 .put("supervisor", p.supervisor() != null ? p.supervisor().value() : "")
-                .putObjects("participants", participants)
-                .build();
+                .putObjects("participants", participants);
+        if (p.supervisor() != null) {
+            ctx.userRepository.findByUsername(p.supervisor())
+                    .ifPresent(u -> b.put("supervisorFullName", u.name().first() + " " + u.name().last()));
+        }
+        return b.build();
     }
 
     private static HttpResponse resultToResponse(Result result) {

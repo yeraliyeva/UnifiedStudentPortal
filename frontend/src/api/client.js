@@ -2,16 +2,18 @@ const BASE = "http://localhost:8080/api";
 
 export async function request(method, path, body) {
   const token = localStorage.getItem("token");
+  const lang = localStorage.getItem("lang") || "en";
   const res = await fetch(BASE + path, {
     method,
     headers: {
       "Content-Type": "application/json",
+      "Accept-Language": lang,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const data = await res.json().catch(() => ({ message: res.statusText }));
-  if (!res.ok) throw data;
+  const data = await res.json().catch(() => ({ error: res.statusText }));
+  if (!res.ok) throw new Error(data.error || data.message || res.statusText);
   return data;
 }
 

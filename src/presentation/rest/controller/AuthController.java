@@ -38,10 +38,12 @@ public final class AuthController {
         }
 
         String token = tokens.createSession(user.get().username());
+        boolean isResearcher = user.get() instanceof domain.user.ResearcherCapable rc && rc.isResearcher();
         JsonValue responseBody = JsonObjectBuilder.create()
                 .put("token", token)
                 .put("username", user.get().username().value())
                 .put("role",  user.get().getClass().getSimpleName())
+                .put("isResearcher", isResearcher)
                 .build();
         return HttpResponse.ok(responseBody);
     }

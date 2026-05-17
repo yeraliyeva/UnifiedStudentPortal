@@ -156,7 +156,7 @@ public final class ManagerMenu extends Menu {
     private void publishNewsInteractive() {
         String title = console.readLine("Title:");
         String body = console.readLine("Body:");
-        Result r = publishNews.execute(manager.username(), title, body);
+        Result r = publishNews.execute(manager.username(), title, body, false);
         console.println(r.message());
     }
 

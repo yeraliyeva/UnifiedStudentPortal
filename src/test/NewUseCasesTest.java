@@ -184,7 +184,7 @@ public final class NewUseCasesTest {
 
     private static void testComment() {
         NewsRepository news = new InMemoryNewsRepository();
-        new PublishNews(news, new IdSequence(), newLogger()).execute(new Username("admin"), "T", "B");
+        new PublishNews(news, new IdSequence(), newLogger()).execute(new Username("admin"), "T", "B", false);
         var n = news.findAllSorted().get(0);
         Result r = new CommentOnNews(news, newLogger()).execute(Fixtures.student("eve"), n.id(), "neat");
         Assert.isTrue(r.success(), "Comment should succeed");

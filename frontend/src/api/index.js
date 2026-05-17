@@ -3,10 +3,11 @@ import { get, post, del, put } from "./client.js";
 export const login  = (username, password) => post("/login",  { username, password });
 export const logout = ()                   => post("/logout");
 
-export const listUsers    = ()         => get(`/users`);
-export const getUser      = (username) => get(`/users/${username}`);
-export const createStudent = (data)    => post("/users/students", data);
-export const deleteUser   = (username) => del(`/users/${username}`);
+export const listUsers     = ()         => get(`/users`);
+export const userDirectory = ()         => get("/users/directory");
+export const getUser       = (username) => get(`/users/${username}`);
+export const createStudent = (data)     => post("/users/students", data);
+export const deleteUser    = (username) => del(`/users/${username}`);
 export const getLogs      = ()         => get("/logs");
 export const getReport    = ()         => get("/reports/academic");
 
@@ -30,8 +31,9 @@ export const sendMessage   = (data) => post("/messages", data);
 export const listNews      = ()     => get("/news");
 export const publishNews   = (data) => post("/news", data);
 export const commentOnNews = (id, comment) => post(`/news/${id}/comment`, { comment });
-export const listRequests  = ()     => get("/requests");
-export const submitRequest = (data) => post("/requests", data);
+export const listRequests   = ()              => get("/requests");
+export const submitRequest  = (data)           => post("/requests", data);
+export const processRequest = (id, status)     => put(`/requests/${id}`, { status });
 export const listOrders    = ()     => get("/orders");
 export const createOrder   = (data) => post("/orders", data);
 export const acceptOrder   = (id)   => put(`/orders/${id}/accept`);
@@ -43,5 +45,6 @@ export const getCitation   = (id, fmt) => get(`/papers/${id}/cite?format=${fmt}`
 export const listProjects  = ()        => get("/projects");
 export const createProject = (data)    => post("/projects", data);
 export const joinProject   = (journal) => post(`/projects/${encodeURIComponent(journal)}/join`);
-export const subscribe     = (journal) => post("/subscriptions", { journal });
-export const unsubscribe   = (journal) => del(`/subscriptions/${encodeURIComponent(journal)}`);
+export const subscribe        = (journal) => post("/subscriptions", { journal });
+export const unsubscribe      = (journal) => del(`/subscriptions/${encodeURIComponent(journal)}`);
+export const becomeResearcher = (field)   => post("/research/become", { field });

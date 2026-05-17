@@ -14,8 +14,9 @@ import java.util.List;
 
 public final class GenerateAcademicReport {
     public record Row(String courseName, int enrolled, int max, double avg, long passing) {}
-    public record TopStudent(String fullName, double gpa) {}
+    public record TopStudent(String username, String fullName, double gpa) {}
     public record Report(int totalCourses, long totalStudents, long totalTeachers,
+                         double averageGpa, long failingStudents,
                          List<Row> rows, List<TopStudent> top) {}
 
     private final CourseRepository courses;
@@ -31,18 +32,21 @@ public final class GenerateAcademicReport {
     }
 
     public Report execute(domain.shared.Username actor) {
-        long studentCount = users.findAll().stream().filter(u -> u instanceof Student).count();
-        long teacherCount = users.findAll().stream().filter(u -> u instanceof Teacher).count();
+        List<User> all = users.findAll().stream().toList();
+        List<Student> students = all.stream()
+                .filter(u -> u instanceof Student).map(u -> (Student) u).toList();
+        long teacherCount = all.stream().filter(u -> u instanceof Teacher).count();
         List<Row> rows = courses.findAll().stream().map(this::rowOf).toList();
-        List<TopStudent> top = users.findAll().stream()
-                .filter(u -> u instanceof Student)
-                .map(u -> (Student) u)
-                .map(s -> new TopStudent(s.name().full(), gpa.of(s)))
+        List<TopStudent> top = students.stream()
+                .map(s -> new TopStudent(s.username().value(), s.name().full(), gpa.of(s)))
                 .sorted(Comparator.comparingDouble(TopStudent::gpa).reversed())
                 .limit(5)
                 .toList();
+        double averageGpa = students.stream().mapToDouble(gpa::of).average().orElse(0.0);
+        long failingStudents = students.stream().filter(s -> s.failCount() > 0).count();
         logger.log(actor, "Generated academic report");
-        return new Report(courses.findAll().size(), studentCount, teacherCount, rows, top);
+        return new Report(courses.findAll().size(), students.size(), teacherCount,
+                averageGpa, failingStudents, rows, top);
     }
 
     private Row rowOf(Course c) {

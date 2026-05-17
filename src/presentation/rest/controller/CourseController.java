@@ -98,11 +98,14 @@ public final class CourseController {
         return resultToResponse(result);
     }
 
-    /** GET /api/courses/{id}/grades — Teacher only */
+    /** GET /api/courses/{id}/grades — Teacher of that course only. */
     public HttpResponse viewGrades(HttpRequest request) {
+        Teacher teacher = (Teacher) RequestContext.current();
         String courseId = request.pathSegment(2).orElse("");
         return ctx.courseRepository.findById(new CourseId(courseId))
-                .map(c -> HttpResponse.ok(CourseSerializer.gradesToJson(c.allGrades())))
+                .map(c -> c.teachers().contains(teacher.username())
+                        ? HttpResponse.ok(CourseSerializer.gradesToJson(c.allGrades()))
+                        : HttpResponse.forbidden())
                 .orElse(HttpResponse.notFound("Course not found."));
     }
 
